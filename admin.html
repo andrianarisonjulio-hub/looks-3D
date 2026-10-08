@@ -305,12 +305,32 @@
         }
 
         async function logoutAdmin() {
+            // 1. Déconnexion de Supabase Auth
             if (supabaseClient) {
-                await supabaseClient.auth.signOut();
+                try {
+                    await supabaseClient.auth.signOut();
+                } catch (e) {
+                    console.error("Erreur de déconnexion :", e);
+                }
+                supabaseClient = null;
             }
+
+            // 2. Nettoyage du stockage local (localStorage et sessionStorage)
+            localStorage.removeItem('supabaseUrl');
+            localStorage.removeItem('supabaseKey');
+            sessionStorage.clear();
+
+            // 3. Remise à zéro complète des champs du formulaire de connexion
+            document.getElementById('login-supabase-url').value = '';
+            document.getElementById('login-supabase-key').value = '';
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+
+            // 4. Masquer le tableau de bord et réafficher l'écran de connexion
             document.getElementById('admin-dashboard').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
-            showToast("Déconnexion réussie");
+
+            showToast("Déconnexion réussie et identifiants effacés !");
         }
 
         async function loadAdminProducts() {
