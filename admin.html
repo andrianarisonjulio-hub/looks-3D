@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOOKS - Administration & Gestion Catalogue 3D</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        looks: {
+                            red: '#ff1f2d',
+                            dark: '#0f0f11',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'Space Grotesk', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 300;
+            letter-spacing: -0.01em;
+            background: #0f0f11;
+            color: #f8fafc;
+        }
+
+        .glass-ui {
+            background: rgba(20, 20, 26, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 99px;
+        }
+
+        input[type=range] {
+            accent-color: #ff1f2d;
+        }
+    </style>
+</head>
+
+<body class="h-full flex flex-col antialiased relative selection:bg-red-500 selection:text-white overflow-hidden">
+
+    <!-- LOGIN SCREEN OVERLAY (Si non connecté) -->
+    <div id="auth-screen" class="absolute inset-0 z-50 bg-[#0f0f11] flex items-center justify-center p-4">
+        <div class="glass-ui max-w-sm w-full rounded-3xl p-8 shadow-2xl space-y-6 text-center">
+            
+            <div class="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center text-xl mx-auto shadow-lg">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            
+            <div class="space-y-1">
+                <h1 class="font-semibold text-white text-lg tracking-wide uppercase">LOOKS Admin</h1>
+                <p class="text-xs text-slate-400 font-light">Connexion sécurisée au catalogue 3D</p>
+            </div>
+
+            <!-- Configuration des clés Supabase directement ici si non configurées -->
+            <form id="login-form" class="space-y-4 text-left text-xs">
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] mb-1">URL Supabase</label>
+                    <input type="url" id="login-supabase-url" placeholder="https://xyz.supabase.co" required
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500 font-mono text-xs">
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] mb-1">Clé API Anon (Public Key)</label>
+                    <input type="password" id="login-supabase-key" placeholder="eyJhbGciOiJIUzI1Ni..." required
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500 font-mono text-xs">
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] mb-1">Code PIN Admin</label>
+                    <input type="password" id="login-pin" placeholder="Saisir le code PIN" required
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-center tracking-widest text-sm focus:outline-none focus:border-red-500">
+                </div>
+
+                <button type="submit" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium uppercase tracking-wider transition shadow-lg shadow-red-600/30">
+                    Se connecter à l'Admin
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN ADMIN DASHBOARD (Masqué par défaut) -->
+    <main id="admin-dashboard" class="flex-1 w-full h-full p-6 sm:p-10 overflow-y-auto custom-scrollbar hidden">
+        <div class="max-w-6xl mx-auto space-y-8">
+            
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-500 mb-1">
+                        <i class="fa-solid fa-shield-halved"></i> Dashboard Sécurisé
+                    </div>
+                    <h1 class="text-2xl font-bold text-white tracking-tight">Gestionnaire de Produits 3D (Cloudflare R2 & Supabase)</h1>
+                    <p class="text-xs text-slate-400 mt-1">Pilotez votre catalogue, vos prix et vos redirections e-commerce en toute autonomie.</p>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <a id="link-client-preview" href="app.html" target="_blank" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white text-xs font-medium tracking-wide transition flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-eye text-red-500"></i>
+                        <span>Ouvrir le Visualiseur Client</span>
+                    </a>
+                    <button onclick="logoutAdmin()" class="px-3.5 py-2.5 rounded-xl border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-500 text-xs font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Déconnexion</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- FORMULAIRE AJOUT / EDITION -->
+            <div class="glass-ui rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                    <h2 id="form-title" class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                        <i class="fa-solid fa-plus text-red-500"></i> Ajouter un Nouveau Produit 3D
+                    </h2>
+                    <button id="btn-reset-form" class="text-xs text-slate-400 hover:text-red-500 underline hidden">
+                        Annuler la modification
+                    </button>
+                </div>
+
+                <form id="product-form" class="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
+                    <input type="hidden" id="form-product-id">
+
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">Nom du Produit *</label>
+                        <input type="text" id="form-name" placeholder="ex: Chaise Ergonomique" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">Code EAN (Code Barre)</label>
+                        <input type="text" id="form-ean" placeholder="ex: 370000000001" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">Prix Vente (€) *</label>
+                        <input type="text" id="form-price" placeholder="ex: 299,00 €" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500" required>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">URL Modèle 3D Cloudflare R2 (.glb) *</label>
+                        <input type="url" id="form-model-url" placeholder="https://pub-xxx.r2.dev/3d-models/chaise.glb" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500 font-mono" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">Sous-titre / Collection</label>
+                        <input type="text" id="form-subtitle" placeholder="ex: Collection Studio 2026" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500">
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">Description "À propos du produit"</label>
+                        <textarea id="form-description" rows="2" placeholder="Saisir la description complète du produit..." class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500"></textarea>
+                    </div>
+
+                    <!-- Fiche Technique -->
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">Dimensions</label>
+                        <input type="text" id="form-dimensions" placeholder="65 x 60 x 85 cm" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">Poids Net</label>
+                        <input type="text" id="form-weight" placeholder="8.5 kg" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">Matériaux</label>
+                        <input type="text" id="form-material" placeholder="Chêne massif & Aluminium" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500">
+                    </div>
+
+                    <!-- Liens Vendeurs -->
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">Lien Vendeur Amazon</label>
+                        <input type="url" id="form-vendor-amazon" placeholder="https://www.amazon.com/dp/..." class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">Lien Vendeur Wayfair</label>
+                        <input type="url" id="form-vendor-wayfair" placeholder="https://www.wayfair.com/..." class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 uppercase text-[10px] mb-1.5">Lien Vendeur IKEA</label>
+                        <input type="url" id="form-vendor-ikea" placeholder="https://www.ikea.com/..." class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500 font-mono">
+                    </div>
+
+                    <div class="md:col-span-3 flex justify-end pt-3">
+                        <button type="submit" class="px-7 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium uppercase tracking-wider transition shadow-lg shadow-red-600/30">
+                            Enregistrer dans Supabase
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TABLEAU DE GESTION -->
+            <div class="glass-ui rounded-3xl p-6 sm:p-8 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                        <i class="fa-solid fa-cubes text-red-500"></i> Catalogue Actuel dans Supabase
+                    </h3>
+                    <button id="btn-refresh-list" class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-rotate-right"></i> Actualiser
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="uppercase text-[10px] bg-slate-900 text-slate-400">
+                            <tr>
+                                <th class="p-3.5 rounded-l-xl">Nom Produit</th>
+                                <th class="p-3.5">EAN</th>
+                                <th class="p-3.5">Prix</th>
+                                <th class="p-3.5">Fichier 3D (.glb)</th>
+                                <th class="p-3.5 text-right rounded-r-xl">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-products-list" class="divide-y divide-slate-800/80">
+                            <tr>
+                                <td colspan="5" class="p-6 text-center text-slate-500">Connexion à la base de données...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toast-container" class="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+
+    <script>
+        const ADMIN_PIN_SECRET = "1234"; // Code PIN modifiable ici
+        let supabaseClient = null;
+
+        function showToast(message, isError = false) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-2.5 rounded-xl ${isError ? 'bg-red-950/90 border-red-700' : 'bg-slate-900/90 border-slate-700/50'} text-white text-xs font-light shadow-xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 border`;
+            toast.innerHTML = `<i class="fa-solid ${isError ? 'fa-circle-exclamation text-red-500' : 'fa-circle-check text-emerald-400'}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function initSupabaseFromStorage() {
+            const url = localStorage.getItem('supabaseUrl');
+            const key = localStorage.getItem('supabaseKey');
+            
+            if (url && key) {
+                document.getElementById('login-supabase-url').value = url;
+                document.getElementById('login-supabase-key').value = key;
+                try {
+                    supabaseClient = window.supabase.createClient(url, key);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        function checkAuthSession() {
+            if (sessionStorage.getItem('adminAuth') === 'true') {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+                loadAdminProducts();
+            }
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('adminAuth');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            showToast("Déconnexion réussie");
+        }
+
+        async function loadAdminProducts() {
+            if (!supabaseClient) return;
+            const listEl = document.getElementById('admin-products-list');
+            listEl.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Chargement des produits...</td></tr>`;
+
+            try {
+                const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    listEl.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Aucun produit dans Supabase pour le moment.</td></tr>`;
+                    return;
+                }
+
+                listEl.innerHTML = data.map(p => `
+                    <tr class="hover:bg-slate-900/60 transition">
+                        <td class="p-3.5 font-medium text-white">${p.name}</td>
+                        <td class="p-3.5 font-mono text-slate-400 text-[11px]">${p.ean || '-'}</td>
+                        <td class="p-3.5 text-red-500 font-semibold">${p.price || '-'}</td>
+                        <td class="p-3.5 font-mono text-[10px] text-slate-400 truncate max-w-[220px]" title="${p.model_url}">${p.model_url}</td>
+                        <td class="p-3.5 text-right space-x-2 shrink-0">
+                            <a href="app.html?id=${p.id}" target="_blank" title="Voir dans le visualiseur" class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-600 hover:text-white transition">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <button onclick="editProduct('${p.id}')" title="Éditer" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-600 hover:text-white transition">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteProduct('${p.id}')" title="Supprimer" class="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-600 hover:text-white transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                listEl.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Erreur lors du chargement des données. Vérifiez vos clés Supabase.</td></tr>`;
+            }
+        }
+
+        window.editProduct = async function(id) {
+            if (!supabaseClient) return;
+            const { data } = await supabaseClient.from('products').select('*').eq('id', id).single();
+            if (!data) return;
+
+            document.getElementById('form-product-id').value = data.id;
+            document.getElementById('form-name').value = data.name || '';
+            document.getElementById('form-ean').value = data.ean || '';
+            document.getElementById('form-price').value = data.price || '';
+            document.getElementById('form-model-url').value = data.model_url || '';
+            document.getElementById('form-subtitle').value = data.subtitle || '';
+            document.getElementById('form-description').value = data.description || '';
+            document.getElementById('form-dimensions').value = data.dimensions || '';
+            document.getElementById('form-weight').value = data.weight || '';
+            document.getElementById('form-material').value = data.material || '';
+            document.getElementById('form-vendor-amazon').value = data.vendor_amazon || '';
+            document.getElementById('form-vendor-wayfair').value = data.vendor_wayfair || '';
+            document.getElementById('form-vendor-ikea').value = data.vendor_ikea || '';
+
+            document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-pen text-indigo-400"></i> Modifier le produit`;
+            document.getElementById('btn-reset-form').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.deleteProduct = async function(id) {
+            if (!supabaseClient) return;
+            if (!confirm("Voulez-vous vraiment supprimer ce produit de la base ?")) return;
+
+            const { error } = await supabaseClient.from('products').delete().eq('id', id);
+            if (error) {
+                showToast("Erreur lors de la suppression", true);
+            } else {
+                showToast("Produit supprimé avec succès !");
+                loadAdminProducts();
+            }
+        };
+
+        function resetForm() {
+            document.getElementById('form-product-id').value = '';
+            document.getElementById('product-form').reset();
+            document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-plus text-red-500"></i> Ajouter un Nouveau Produit 3D`;
+            document.getElementById('btn-reset-form').classList.add('hidden');
+        }
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const url = document.getElementById('login-supabase-url').value.trim();
+            const key = document.getElementById('login-supabase-key').value.trim();
+            const pin = document.getElementById('login-pin').value.trim();
+
+            if (pin !== ADMIN_PIN_SECRET) {
+                showToast("Code PIN administrateur incorrect", true);
+                return;
+            }
+
+            try {
+                localStorage.setItem('supabaseUrl', url);
+                localStorage.setItem('supabaseKey', key);
+                supabaseClient = window.supabase.createClient(url, key);
+
+                sessionStorage.setItem('adminAuth', 'true');
+                showToast("Connexion administrateur établie !");
+                checkAuthSession();
+            } catch (err) {
+                showToast("Erreur de connexion à l'API Supabase", true);
+            }
+        });
+
+        document.getElementById('product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!supabaseClient) return;
+
+            const productId = document.getElementById('form-product-id').value;
+            const payload = {
+                name: document.getElementById('form-name').value.trim(),
+                ean: document.getElementById('form-ean').value.trim() || null,
+                price: document.getElementById('form-price').value.trim(),
+                model_url: document.getElementById('form-model-url').value.trim(),
+                subtitle: document.getElementById('form-subtitle').value.trim() || 'Collection Studio • Modèle 3D Haute Définition',
+                description: document.getElementById('form-description').value.trim() || null,
+                dimensions: document.getElementById('form-dimensions').value.trim() || '65 x 60 x 85 cm',
+                weight: document.getElementById('form-weight').value.trim() || '8.5 kg',
+                material: document.getElementById('form-material').value.trim() || 'Chêne massif & Aluminium',
+                vendor_amazon: document.getElementById('form-vendor-amazon').value.trim() || 'https://www.amazon.com',
+                vendor_wayfair: document.getElementById('form-vendor-wayfair').value.trim() || 'https://www.wayfair.com',
+                vendor_ikea: document.getElementById('form-vendor-ikea').value.trim() || 'https://www.ikea.com',
+            };
+
+            let error;
+            if (productId) {
+                const res = await supabaseClient.from('products').update(payload).eq('id', productId);
+                error = res.error;
+            } else {
+                const res = await supabaseClient.from('products').insert([payload]);
+                error = res.error;
+            }
+
+            if (error) {
+                console.error(error);
+                showToast("Erreur lors de l'enregistrement", true);
+            } else {
+                showToast(productId ? "Produit mis à jour !" : "Produit ajouté au catalogue !");
+                resetForm();
+                loadAdminProducts();
+            }
+        });
+
+        document.getElementById('btn-reset-form').addEventListener('click', resetForm);
+        document.getElementById('btn-refresh-list').addEventListener('click', loadAdminProducts);
+
+        window.onload = function() {
+            initSupabaseFromStorage();
+            checkAuthSession();
+        };
+    </script>
+</body>
+</html>

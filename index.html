@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOOKS - 3D Studio & Product Visualizer</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        looks: {
+                            red: '#ff1f2d',
+                            dark: '#0f0f11',
+                            bg: '#e8e8e8',
+                            panel: 'rgba(255, 255, 255, 0.85)',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'Space Grotesk', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <!-- Three.js and Loaders -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 200;
+            letter-spacing: -0.01em;
+            user-select: none;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        .dark body {
+            background: #0f0f11;
+        }
+
+        /* Glassmorphism UI panel */
+        .glass-ui {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .dark .glass-ui {
+            background: rgba(20, 20, 26, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Drawer transition */
+        .drawer-transition {
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 99px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        input[type=range] {
+            accent-color: #ff1f2d;
+        }
+    </style>
+</head>
+
+<body class="h-full text-slate-900 dark:text-slate-100 flex flex-col antialiased relative selection:bg-red-500 selection:text-white">
+
+    <header class="absolute top-0 left-0 right-0 h-20 px-6 sm:px-8 flex items-center justify-between z-30 pointer-events-none">
+        
+        <!-- LOGO & BRANDING -->
+        <div class="pointer-events-auto flex items-center gap-3">
+            <span class="text-2xl font-light tracking-wider text-slate-900 dark:text-white uppercase select-none">
+                LOOKS <span class="text-xs font-semibold text-red-500 tracking-normal border border-red-500/30 px-2 py-0.5 rounded-full ml-1">3D</span>
+            </span>
+
+            <!-- Admin Badge -->
+            <div id="admin-indicator-badge" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-[11px] font-medium">
+                <i class="fa-solid fa-lock text-[10px]"></i>
+                <span>Espace Admin</span>
+            </div>
+        </div>
+
+        <!-- CLIENT NAVIGATION TUTORIAL HINTS -->
+        <div id="header-client-hints" class="hidden lg:flex items-center gap-6 pointer-events-auto text-slate-500 dark:text-slate-400 text-xs font-light tracking-wider">
+            
+            <!-- Rotation Hint (Clic Gauche) -->
+            <div id="hint-rotate" class="flex items-center gap-2 hover:text-slate-800 dark:hover:text-slate-200 transition px-2 py-1 rounded-lg">
+                <svg class="w-5 h-5 shrink-0 text-slate-700 dark:text-slate-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="3" width="12" height="18" rx="6" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M6 9h12" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M12 3v6" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M12 3.75A5.25 5.25 0 0 0 6.75 9H12V3.75Z" fill="#ff1f2d"/>
+                </svg>
+                <span><strong class="font-medium text-slate-800 dark:text-slate-200">clic gauche</strong> : rotation</span>
+            </div>
+
+            <!-- Move Hint (Clic Droit) -->
+            <div id="hint-pan" class="flex items-center gap-2 hover:text-slate-800 dark:hover:text-slate-200 transition px-2 py-1 rounded-lg">
+                <svg class="w-5 h-5 shrink-0 text-slate-700 dark:text-slate-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="3" width="12" height="18" rx="6" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M6 9h12" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M12 3v6" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M12 3.75A5.25 5.25 0 0 1 17.25 9H12V3.75Z" fill="#ff1f2d"/>
+                </svg>
+                <span><strong class="font-medium text-slate-800 dark:text-slate-200">clic droit</strong> : déplacement</span>
+            </div>
+
+            <!-- Zoom Hint (Molette) -->
+            <div id="hint-zoom" class="flex items-center gap-2 hover:text-slate-800 dark:hover:text-slate-200 transition px-2 py-1 rounded-lg">
+                <svg class="w-5 h-5 shrink-0 text-slate-700 dark:text-slate-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="3" width="12" height="18" rx="6" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="10.5" y="5.5" width="3" height="5" rx="1.5" fill="#ff1f2d"/>
+                    <path d="M12 1.5l-1.5 1.5h3L12 1.5z" fill="currentColor"/>
+                    <path d="M12 22.5l-1.5-1.5h3L12 22.5z" fill="currentColor"/>
+                </svg>
+                <span><strong class="font-medium text-slate-800 dark:text-slate-200">molette</strong> : zoom</span>
+            </div>
+
+            <!-- Button replay tutorial -->
+            <button id="btn-replay-guide" title="Revoir l'animation guide de navigation" class="ml-2 px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 hover:border-red-500 hover:text-red-500 transition text-[11px] flex items-center gap-1.5">
+                <i class="fa-solid fa-play text-[10px]"></i>
+                <span>Guide</span>
+            </button>
+        </div>
+
+        <!-- RIGHT HEADER CONTROLS -->
+        <div class="pointer-events-auto flex items-center gap-2.5">
+            
+            <!-- Dark / Light Studio Toggle -->
+            <button id="btn-theme-toggle" title="Changer le mode d'éclairage du studio" 
+                class="w-9 h-9 rounded-xl flex items-center justify-center bg-white/60 dark:bg-slate-800/60 border border-slate-300/80 dark:border-slate-700 shadow-sm text-slate-700 dark:text-slate-200 hover:scale-105 transition">
+                <i class="fa-solid fa-sun dark:hidden text-amber-500 text-sm"></i>
+                <i class="fa-solid fa-moon hidden dark:block text-indigo-400 text-sm"></i>
+            </button>
+
+            <!-- Product Description Info Button -->
+            <button id="btn-open-desc-tab" title="Fiche & Description Produit" 
+                class="w-9 h-9 rounded-xl flex items-center justify-center bg-red-600/10 dark:bg-red-500/20 border border-red-500/40 shadow-sm text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition transform hover:scale-105">
+                <i class="fa-solid fa-circle-info text-sm"></i>
+            </button>
+
+            <!-- Zoom Percentage Badge -->
+            <span id="zoom-badge" class="px-2.5 py-1 text-xs font-mono rounded-xl bg-white/60 dark:bg-slate-800/60 border border-slate-300/80 dark:border-slate-700 text-slate-700 dark:text-slate-200">100%</span>
+        </div>
+    </header>
+
+    <main id="view-client" class="relative w-full h-full overflow-hidden flex-1">
+        <!-- Canvas for Three.js 3D Rendering -->
+        <canvas id="webgl-canvas" class="w-full h-full block touch-none outline-none"></canvas>
+
+        <!-- Guide Overlay Banner -->
+        <div id="guide-overlay" class="absolute top-24 left-1/2 -translate-x-1/2 z-20 glass-ui px-4 py-2 rounded-2xl shadow-xl flex items-center gap-3 transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none">
+            <div id="guide-icon-box" class="w-8 h-8 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-arrows-spin"></i>
+            </div>
+            <div>
+                <div id="guide-step-title" class="text-[11px] font-bold text-slate-900 dark:text-white uppercase tracking-wider">1. ROTATION</div>
+                <div id="guide-step-desc" class="text-[10px] text-slate-500 dark:text-slate-400 font-light">Observation à 360° & Vue sous tous les angles</div>
+            </div>
+        </div>
+
+        <!-- Drawer Floating Toggle Button -->
+        <button id="btn-open-drawer" title="Ouvrir la fiche produit" class="absolute top-24 right-6 z-20 w-10 h-10 rounded-2xl glass-ui flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition shadow-lg">
+            <i id="drawer-chevron-icon" class="fa-solid fa-chevron-left text-sm"></i>
+        </button>
+
+        <!-- Loading Overlay -->
+        <div id="loading-spinner" class="absolute inset-0 z-20 bg-slate-100/60 dark:bg-slate-950/60 backdrop-blur-sm flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
+            <div class="relative w-14 h-14 flex items-center justify-center">
+                <div class="absolute inset-0 rounded-full border-3 border-red-500/20 border-t-red-500 animate-spin"></div>
+                <i class="fa-solid fa-cube text-red-500 text-base animate-pulse"></i>
+            </div>
+            <p id="loading-text" class="mt-3 text-xs font-light tracking-widest text-slate-700 dark:text-slate-200 uppercase">Chargement du studio...</p>
+            <div class="w-40 h-1 bg-slate-200 dark:bg-slate-800 rounded-full mt-2 overflow-hidden">
+                <div id="loading-bar" class="h-full bg-red-500 w-0 transition-all duration-200"></div>
+            </div>
+        </div>
+
+        <!-- Bottom Client UI Overlay -->
+        <div class="absolute bottom-10 left-8 right-8 z-10 flex items-end justify-between pointer-events-none">
+            
+            <!-- Bottom Left Title & Description -->
+            <div class="pointer-events-auto max-w-lg">
+                <h1 id="product-title" class="text-xl sm:text-2xl md:text-3xl font-light uppercase tracking-tight text-slate-950 dark:text-white leading-snug">
+                    CHAISE ERGONOMIQUE STUDIO
+                </h1>
+                <p id="product-subtitle" class="text-[10px] sm:text-[11px] font-light text-slate-500 dark:text-slate-400 mt-2 tracking-widest uppercase">
+                    Collection Studio • Modèle 3D Haute Définition
+                </p>
+            </div>
+
+            <!-- Bottom Right Red CTA Button -->
+            <button id="btn-availability" class="pointer-events-auto px-4 py-2.5 rounded-full bg-red-600 hover:bg-red-500 active:scale-95 text-white font-light text-xs sm:text-sm tracking-wide shadow-lg shadow-red-600/30 flex items-center gap-2.5 transition-all duration-200 hover:shadow-red-600/50">
+                <span>Acheter ce produit au meilleur prix</span>
+                <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-bag-shopping text-white text-[10px]"></i>
+                </div>
+            </button>
+        </div>
+    </main>
+
+    <aside id="drawer-panel" class="fixed top-0 right-0 bottom-0 w-80 sm:w-96 glass-ui z-40 drawer-transition transform translate-x-full shadow-2xl flex flex-col">
+        
+        <div class="p-6 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between pb-4">
+            <div>
+                <h2 class="text-base font-normal uppercase tracking-wider text-slate-900 dark:text-white">Fiche & Description</h2>
+            </div>
+            <button id="btn-close-drawer" class="w-8 h-8 rounded-full bg-slate-200/60 dark:bg-slate-800/60 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 text-xs">
+            
+            <!-- Description -->
+            <div class="space-y-2">
+                <label class="font-normal uppercase tracking-wider text-slate-800 dark:text-slate-200 block text-[11px] flex items-center gap-1.5">
+                    <i class="fa-solid fa-align-left text-red-500"></i> À propos du produit
+                </label>
+                <p id="desc-full-text" class="text-slate-600 dark:text-slate-300 font-light leading-relaxed text-xs">
+                    Conçue pour un confort optimal et une esthétique épurée, cette pièce allie l'ergonomie moderne à des matériaux haut de gamme.
+                </p>
+            </div>
+
+            <!-- Technical Specifications Table -->
+            <div class="space-y-2">
+                <label class="font-normal uppercase tracking-wider text-slate-800 dark:text-slate-200 block text-[11px] flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-check text-red-500"></i> Fiche Technique
+                </label>
+                
+                <div class="divide-y divide-slate-200 dark:divide-slate-800 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden font-light">
+                    <div class="flex justify-between p-3">
+                        <span class="text-slate-500 dark:text-slate-400">Dimensions</span>
+                        <span id="spec-dimensions" class="text-slate-900 dark:text-slate-100 font-medium">65 x 60 x 85 cm</span>
+                    </div>
+                    <div class="flex justify-between p-3">
+                        <span class="text-slate-500 dark:text-slate-400">Poids Net</span>
+                        <span id="spec-weight" class="text-slate-900 dark:text-slate-100 font-medium">8.5 kg</span>
+                    </div>
+                    <div class="flex justify-between p-3">
+                        <span class="text-slate-500 dark:text-slate-400">Matériaux Principal</span>
+                        <span id="spec-material" class="text-slate-900 dark:text-slate-100 font-medium">Chêne massif & Aluminium</span>
+                    </div>
+                    <div class="flex justify-between p-3">
+                        <span class="text-slate-500 dark:text-slate-400">Garantie</span>
+                        <span id="spec-warranty" class="text-slate-900 dark:text-slate-100 font-medium">2 ans constructeur</span>
+                    </div>
+                    <div class="flex justify-between p-3">
+                        <span class="text-slate-500 dark:text-slate-400">Origine</span>
+                        <span id="spec-origin" class="text-slate-900 dark:text-slate-100 font-medium">Fabriqué en France</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Redirection CTA -->
+            <button onclick="document.getElementById('btn-availability').click()" class="w-full py-3.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-light text-xs uppercase tracking-wider shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 transition">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <span>Acheter ce produit au meilleur prix</span>
+            </button>
+        </div>
+    </aside>
+
+    <div id="availability-modal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-ui max-w-md w-full rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 transform scale-95 transition-transform duration-300" id="modal-card">
+            
+            <div class="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800/80 pb-4">
+                <div>
+                    <h3 id="modal-product-name" class="font-medium text-slate-900 dark:text-white uppercase text-base tracking-wide">CHAISE ERGONOMIQUE STUDIO</h3>
+                    <p id="modal-product-price" class="text-sm font-semibold text-red-600 mt-0.5">299,00 €</p>
+                </div>
+                <button id="btn-close-modal" class="w-8 h-8 rounded-full bg-slate-200/80 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <span class="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                    Acheter chez un vendeur partenaire
+                </span>
+                
+                <!-- Amazon -->
+                <a id="link-vendor-amazon" href="https://www.amazon.com" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 dark:bg-slate-900/80 dark:hover:bg-slate-800 transition border border-slate-200/80 dark:border-slate-800 group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-base shrink-0">
+                            <i class="fa-brands fa-amazon"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-slate-900 dark:text-white">Amazon</div>
+                            <span class="text-[10px] font-light text-slate-500 dark:text-slate-400">Europe & International</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="amazon-price" class="text-xs font-semibold text-slate-900 dark:text-white">299,00 €</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-red-500 transition"></i>
+                    </div>
+                </a>
+
+                <!-- Wayfair -->
+                <a id="link-vendor-wayfair" href="https://www.wayfair.com" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 dark:bg-slate-900/80 dark:hover:bg-slate-800 transition border border-slate-200/80 dark:border-slate-800 group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-base shrink-0">
+                            <i class="fa-solid fa-store"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-slate-900 dark:text-white">Wayfair</div>
+                            <span class="text-[10px] font-light text-slate-500 dark:text-slate-400">Ameublement & Déco</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="wayfair-price" class="text-xs font-semibold text-slate-900 dark:text-white">309,00 €</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-red-500 transition"></i>
+                    </div>
+                </a>
+
+                <!-- IKEA -->
+                <a id="link-vendor-ikea" href="https://www.ikea.com" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 dark:bg-slate-900/80 dark:hover:bg-slate-800 transition border border-slate-200/80 dark:border-slate-800 group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-base shrink-0">
+                            <i class="fa-solid fa-couch"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-slate-900 dark:text-white">IKEA</div>
+                            <span class="text-[10px] font-light text-slate-500 dark:text-slate-400">Boutiques & Livraisons</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="ikea-price" class="text-xs font-semibold text-slate-900 dark:text-white">289,00 €</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-red-500 transition"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-auth-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-ui max-w-sm w-full rounded-3xl p-6 shadow-2xl space-y-4 transform scale-95 transition-transform duration-300" id="admin-auth-card">
+            
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center text-lg mx-auto">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3 class="font-semibold text-slate-900 dark:text-white text-base">Espace Administrateur</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-light">Saisissez le mot de passe d'accès pour gérer le catalogue 3D.</p>
+            </div>
+
+            <form id="admin-auth-form" class="space-y-3">
+                <div>
+                    <input type="password" id="admin-pin-input" placeholder="Saisir votre Code PIN" 
+                        class="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-center tracking-widest text-sm focus:outline-none focus:border-red-500">
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-close-auth-modal" class="w-1/2 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium">
+                        Annuler
+                    </button>
+                    <button type="submit" class="w-1/2 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-medium shadow-md">
+                        Valider
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <section id="view-admin" class="flex-1 w-full h-full pt-24 px-4 sm:px-8 pb-12 hidden overflow-y-auto custom-scrollbar bg-slate-100 dark:bg-slate-950 z-20">
+        
+        <div class="max-w-6xl mx-auto space-y-8">
+            
+            <!-- Header Section -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-500 mb-1">
+                        <i class="fa-solid fa-shield-halved"></i> Espace d'Administration
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Gestionnaire du Catalogue Produits 3D</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Gérez vos produits, liens Cloudflare R2 (.glb) et redirections marchands.</p>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button onclick="logoutAdmin()" class="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-red-500 text-slate-600 dark:text-slate-300 hover:text-red-500 text-xs font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Quitter Admin</span>
+                    </button>
+                    <button onclick="switchView('client')" class="px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white text-xs font-medium tracking-wide transition flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-eye text-red-500"></i>
+                        <span>Visualiseur Client</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Supabase Database Connector Card -->
+            <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-database text-red-500"></i> Connecteur Supabase Database
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">URL Supabase</label>
+                        <input type="url" id="admin-supabase-url" placeholder="https://xyz.supabase.co" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Clé API Anon (Public Key)</label>
+                        <input type="text" id="admin-supabase-key" placeholder="eyJhbGciOiJIUzI1Ni..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono text-xs">
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button id="btn-save-config" class="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-medium uppercase tracking-wider transition shadow-sm">
+                        Connecter à Supabase
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 id="form-title" class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-plus text-red-500"></i> Ajouter un Produit 3D
+                    </h3>
+                    <button id="btn-reset-form" class="text-xs text-slate-500 hover:text-red-500 underline hidden">
+                        Annuler la modification
+                    </button>
+                </div>
+
+                <form id="product-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <input type="hidden" id="form-product-id">
+
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Nom du Produit *</label>
+                        <input type="text" id="form-name" placeholder="ex: Chaise Ergonomique" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Code EAN (Code Barre)</label>
+                        <input type="text" id="form-ean" placeholder="ex: 370000000001" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Prix Vente (€) *</label>
+                        <input type="text" id="form-price" placeholder="ex: 299,00 €" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500" required>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">URL Modèle 3D Cloudflare R2 (.glb) *</label>
+                        <input type="url" id="form-model-url" placeholder="https://pub-xxx.r2.dev/3d-models/chaise.glb" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Sous-titre / Collection</label>
+                        <input type="text" id="form-subtitle" placeholder="ex: Collection Studio 2026" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500">
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Description "À propos du produit"</label>
+                        <textarea id="form-description" rows="2" placeholder="Saisir la description complète du produit..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500"></textarea>
+                    </div>
+
+                    <!-- Specs -->
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Dimensions</label>
+                        <input type="text" id="form-dimensions" placeholder="65 x 60 x 85 cm" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Poids Net</label>
+                        <input type="text" id="form-weight" placeholder="8.5 kg" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Matériaux</label>
+                        <input type="text" id="form-material" placeholder="Chêne massif & Aluminium" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500">
+                    </div>
+
+                    <!-- Vendor Links -->
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Lien Vendeur Amazon</label>
+                        <input type="url" id="form-vendor-amazon" placeholder="https://www.amazon.com/dp/..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Lien Vendeur Wayfair</label>
+                        <input type="url" id="form-vendor-wayfair" placeholder="https://www.wayfair.com/..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Lien Vendeur IKEA</label>
+                        <input type="url" id="form-vendor-ikea" placeholder="https://www.ikea.com/..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono">
+                    </div>
+
+                    <div class="md:col-span-3 flex justify-end gap-3 pt-2">
+                        <button type="submit" id="btn-submit-product" class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium uppercase tracking-wider transition shadow-sm">
+                            Enregistrer le produit
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Products Database Table -->
+            <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-cubes text-red-500"></i> Produits enregistrés dans la base
+                    </h3>
+                    <button id="btn-refresh-list" class="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition">
+                        <i class="fa-solid fa-rotate-right"></i> Actualiser
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="uppercase text-[10px] bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
+                            <tr>
+                                <th class="p-3 rounded-l-xl">Nom Produit</th>
+                                <th class="p-3">EAN</th>
+                                <th class="p-3">Prix</th>
+                                <th class="p-3">Fichier 3D (.glb)</th>
+                                <th class="p-3 text-right rounded-r-xl">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-products-list" class="divide-y divide-slate-200 dark:divide-slate-800">
+                            <tr>
+                                <td colspan="5" class="p-4 text-center text-slate-400">Chargement des produits...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+
+    <script>
+        // =========================================================
+        // CONFIGURATION PARAMETERS (MODIFIEZ VOTRE CODE PIN ICI)
+        // =========================================================
+        const CONFIG_ADMIN_PIN = "1234"; // Vous pouvez changer ce mot de passe à tout moment !
+
+        let scene, camera, renderer, controls;
+        let currentModel = null;
+        let shadowPlane = null;
+        let ambientLight, mainLight, fillLight, hemiLight;
+        let baseLightIntensities = { ambient: 1.2, main: 1.8, fill: 1.0, hemi: 0.8 };
+        let initialCameraDistance = 9.486;
+
+        // Navigation Guide Animation State
+        let isGuideAnimating = false;
+        let guideStartTime = 0;
+        const GUIDE_TOTAL_DURATION = 6500;
+        const defaultPos = new THREE.Vector3(5, 4, 7);
+        const defaultTarget = new THREE.Vector3(0, 0.8, 0);
+
+        // Supabase & Active Product State
+        let supabaseClient = null;
+        let activeProduct = null;
+        let currentViewMode = 'client';
+        let isAdminAuthenticated = false;
+
+        function requestAdminAccess() {
+            if (isAdminAuthenticated) {
+                switchView('admin');
+                return;
+            }
+
+            const modal = document.getElementById('admin-auth-modal');
+            const card = document.getElementById('admin-auth-card');
+            const input = document.getElementById('admin-pin-input');
+
+            if (modal && card) {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                card.classList.remove('scale-95');
+                if (input) {
+                    input.value = '';
+                    setTimeout(() => input.focus(), 100);
+                }
+            }
+        }
+
+        function closeAdminAuthModal() {
+            const modal = document.getElementById('admin-auth-modal');
+            const card = document.getElementById('admin-auth-card');
+            if (modal && card) {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                card.classList.add('scale-95');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminAuthenticated = false;
+            sessionStorage.removeItem('adminAuth');
+            showToast("Déconnexion de l'Espace Admin");
+            switchView('client');
+        }
+
+        function switchView(mode) {
+            if (mode === 'admin' && !isAdminAuthenticated) {
+                requestAdminAccess();
+                return;
+            }
+
+            currentViewMode = mode;
+            const clientView = document.getElementById('view-client');
+            const adminView = document.getElementById('view-admin');
+            const clientHints = document.getElementById('header-client-hints');
+            const btnDesc = document.getElementById('btn-open-desc-tab');
+            const zoomBadge = document.getElementById('zoom-badge');
+            const drawerBtn = document.getElementById('btn-open-drawer');
+            const adminBadge = document.getElementById('admin-indicator-badge');
+
+            if (mode === 'admin') {
+                clientView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+
+                if (clientHints) clientHints.classList.add('hidden');
+                if (btnDesc) btnDesc.classList.add('hidden');
+                if (zoomBadge) zoomBadge.classList.add('hidden');
+                if (drawerBtn) drawerBtn.classList.add('hidden');
+                if (adminBadge) adminBadge.classList.remove('hidden'), adminBadge.classList.add('flex');
+
+                loadAdminProducts();
+                window.location.hash = 'admin';
+            } else {
+                adminView.classList.add('hidden');
+                clientView.classList.remove('hidden');
+
+                if (clientHints) clientHints.classList.remove('hidden');
+                if (btnDesc) btnDesc.classList.remove('hidden');
+                if (zoomBadge) zoomBadge.classList.remove('hidden');
+                if (drawerBtn) drawerBtn.classList.remove('hidden');
+                if (adminBadge) adminBadge.classList.add('hidden'), adminBadge.classList.remove('flex');
+
+                onWindowResize();
+                window.location.hash = '';
+            }
+        }
+
+        function showToast(message, isError = false) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-2.5 rounded-xl ${isError ? 'bg-red-950/90 border-red-700' : 'bg-slate-900/90 border-slate-700/50'} text-white text-xs font-light shadow-xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 border`;
+            toast.innerHTML = `<i class="fa-solid ${isError ? 'fa-circle-exclamation text-red-500' : 'fa-circle-check text-emerald-400'}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function updateZoomBadge() {
+            if (!camera || !controls) return;
+            const dist = camera.position.distanceTo(controls.target);
+            const zoomPercent = Math.round((initialCameraDistance / Math.max(dist, 0.1)) * 100);
+            const badge = document.getElementById('zoom-badge');
+            if (badge) badge.textContent = zoomPercent + '%';
+        }
+
+        function showLoading(text) {
+            const spinner = document.getElementById('loading-spinner');
+            const loadingText = document.getElementById('loading-text');
+            const loadingBar = document.getElementById('loading-bar');
+            if (spinner) spinner.classList.remove('opacity-0', 'pointer-events-none');
+            if (loadingText) loadingText.textContent = text || 'Chargement...';
+            if (loadingBar) loadingBar.style.width = '30%';
+        }
+
+        function hideLoading() {
+            const spinner = document.getElementById('loading-spinner');
+            const loadingBar = document.getElementById('loading-bar');
+            if (loadingBar) loadingBar.style.width = '100%';
+            setTimeout(() => {
+                if (spinner) spinner.classList.add('opacity-0', 'pointer-events-none');
+                if (loadingBar) loadingBar.style.width = '0%';
+            }, 200);
+        }
+
+        function fitModelToStage(object) {
+            const box = new THREE.Box3().setFromObject(object);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 3.0 / (maxDim || 1);
+            object.scale.setScalar(scale);
+
+            box.setFromObject(object);
+            box.getCenter(center);
+            object.position.sub(center);
+            object.position.y += (box.max.y - box.min.y) / 2;
+
+            object.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    if (!child.material || child.material.isMeshBasicMaterial) {
+                        child.material = new THREE.MeshStandardMaterial({
+                            color: child.material ? child.material.color : 0xcccccc,
+                            roughness: 0.4,
+                            metalness: 0.2
+                        });
+                    }
+                }
+            });
+        }
+
+        function createChairModel() {
+            const group = new THREE.Group();
+            const matSeat = new THREE.MeshStandardMaterial({ color: 0xff1f2d, roughness: 0.3, metalness: 0.1 });
+            const matMetal = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.2, metalness: 0.8 });
+
+            const seatGeo = new THREE.BoxGeometry(1.6, 0.12, 1.6);
+            const seat = new THREE.Mesh(seatGeo, matSeat);
+            seat.position.y = 1.2;
+            group.add(seat);
+
+            const backGeo = new THREE.BoxGeometry(1.6, 1.2, 0.12);
+            const back = new THREE.Mesh(backGeo, matSeat);
+            back.position.set(0, 1.86, -0.74);
+            group.add(back);
+
+            const legGeo = new THREE.CylinderGeometry(0.04, 0.03, 1.2);
+            const legPositions = [[-0.7, 0.6, -0.7], [0.7, 0.6, -0.7], [-0.7, 0.6, 0.7], [0.7, 0.6, 0.7]];
+            legPositions.forEach(pos => {
+                const leg = new THREE.Mesh(legGeo, matMetal);
+                leg.position.set(...pos);
+                group.add(leg);
+            });
+
+            return group;
+        }
+
+        function startGuideAnimation() {
+            if (!camera || !controls) return;
+            isGuideAnimating = true;
+            controls.enabled = false;
+            guideStartTime = performance.now();
+
+            const overlay = document.getElementById('guide-overlay');
+            if (overlay) overlay.classList.remove('opacity-0', '-translate-y-4');
+        }
+
+        function stopGuideAnimation() {
+            isGuideAnimating = false;
+            if (controls) {
+                controls.enabled = true;
+                controls.target.copy(defaultTarget);
+                controls.update();
+            }
+            const overlay = document.getElementById('guide-overlay');
+            if (overlay) overlay.classList.add('opacity-0', '-translate-y-4');
+            setHighlightHint(null);
+        }
+
+        function setHighlightHint(id) {
+            ['hint-rotate', 'hint-pan', 'hint-zoom'].forEach(hintId => {
+                const el = document.getElementById(hintId);
+                if (el) {
+                    if (hintId === id) {
+                        el.classList.add('bg-red-500/10', 'border', 'border-red-500/40', 'scale-105');
+                    } else {
+                        el.classList.remove('bg-red-500/10', 'border', 'border-red-500/40', 'scale-105');
+                    }
+                }
+            });
+        }
+
+        function updateGuideAnimationStep(now) {
+            const elapsed = now - guideStartTime;
+            const progress = Math.min(elapsed / GUIDE_TOTAL_DURATION, 1.0);
+
+            const titleEl = document.getElementById('guide-step-title');
+            const descEl = document.getElementById('guide-step-desc');
+            const iconBox = document.getElementById('guide-icon-box');
+
+            if (progress < 0.4) {
+                const phaseProgress = progress / 0.4;
+                setHighlightHint('hint-rotate');
+                if (titleEl) titleEl.textContent = "1. ROTATION";
+                if (descEl) descEl.textContent = "Observation à 360° & Vue sous tous les angles";
+                if (iconBox) iconBox.innerHTML = `<i class="fa-solid fa-arrows-spin"></i>`;
+
+                const angle = phaseProgress * Math.PI * 1.5;
+                const polar = Math.sin(phaseProgress * Math.PI) * 0.9 + 0.8;
+                const radius = 9.5;
+
+                camera.position.x = defaultTarget.x + radius * Math.sin(polar) * Math.sin(angle);
+                camera.position.y = defaultTarget.y + radius * Math.cos(polar);
+                camera.position.z = defaultTarget.z + radius * Math.sin(polar) * Math.cos(angle);
+                camera.lookAt(defaultTarget);
+            } else if (progress < 0.7) {
+                const phaseProgress = (progress - 0.4) / 0.3;
+                setHighlightHint('hint-pan');
+                if (titleEl) titleEl.textContent = "2. DÉPLACEMENT";
+                if (descEl) descEl.textContent = "Panoramique latéral et vertical (Clic Droit)";
+                if (iconBox) iconBox.innerHTML = `<i class="fa-solid fa-up-down-left-right"></i>`;
+
+                const offsetX = Math.sin(phaseProgress * Math.PI * 2) * 1.8;
+                const offsetY = Math.cos(phaseProgress * Math.PI * 2) * 0.8;
+
+                const currentTarget = defaultTarget.clone().add(new THREE.Vector3(offsetX, offsetY, 0));
+                camera.position.set(5 + offsetX, 4 + offsetY, 7);
+                camera.lookAt(currentTarget);
+            } else {
+                const phaseProgress = (progress - 0.7) / 0.3;
+                setHighlightHint('hint-zoom');
+                if (titleEl) titleEl.textContent = "3. ZOOM";
+                if (descEl) descEl.textContent = "Agrandissement fluide (Molette)";
+                if (iconBox) iconBox.innerHTML = `<i class="fa-solid fa-magnifying-glass-plus"></i>`;
+
+                const zoomFactor = 1.0 - Math.sin(phaseProgress * Math.PI) * 0.55;
+                const currentPos = defaultPos.clone().sub(defaultTarget).multiplyScalar(zoomFactor).add(defaultTarget);
+                
+                camera.position.copy(currentPos);
+                camera.lookAt(defaultTarget);
+            }
+
+            updateZoomBadge();
+
+            if (progress >= 1.0) stopGuideAnimation();
+        }
+
+        function initSupabase() {
+            const url = localStorage.getItem('supabaseUrl') || '';
+            const key = localStorage.getItem('supabaseKey') || '';
+
+            if (url && key && window.supabase) {
+                try {
+                    supabaseClient = window.supabase.createClient(url, key);
+                    document.getElementById('admin-supabase-url').value = url;
+                    document.getElementById('admin-supabase-key').value = key;
+                } catch (e) {
+                    console.error("Erreur d'initialisation Supabase:", e);
+                }
+            }
+        }
+
+        async function fetchProductData() {
+            const params = new URLSearchParams(window.location.search);
+            const productId = params.get('id');
+            const productEan = params.get('ean');
+
+            if (!supabaseClient) {
+                loadDefaultFallbackProduct();
+                return;
+            }
+
+            try {
+                let query = supabaseClient.from('products').select('*');
+                if (productId) {
+                    query = query.eq('id', productId);
+                } else if (productEan) {
+                    query = query.eq('ean', productEan);
+                } else {
+                    query = query.limit(1);
+                }
+
+                const { data, error } = await query;
+                if (error || !data || data.length === 0) {
+                    loadDefaultFallbackProduct();
+                } else {
+                    applyProductToUI(data[0]);
+                }
+            } catch (err) {
+                console.error(err);
+                loadDefaultFallbackProduct();
+            }
+        }
+
+        function loadDefaultFallbackProduct() {
+            applyProductToUI({
+                name: "Chaise Ergonomique Studio",
+                subtitle: "Collection Studio • Modèle 3D Haute Définition",
+                price: "249,00 €",
+                description: "Conçue pour un confort optimal et une esthétique épurée, cette pièce allie l'ergonomie moderne à des matériaux haut de gamme.",
+                dimensions: "65 x 60 x 85 cm",
+                weight: "8.5 kg",
+                material: "Bois massif & Acier époxy",
+                warranty: "2 ans constructeur",
+                origin: "Fabriqué en France",
+                vendor_amazon: "https://www.amazon.com",
+                vendor_wayfair: "https://www.wayfair.com",
+                vendor_ikea: "https://www.ikea.com",
+                model_url: null
+            });
+        }
+
+        function applyProductToUI(prod) {
+            activeProduct = prod;
+
+            document.getElementById('product-title').textContent = (prod.name || 'NOM DU PRODUIT').toUpperCase();
+            document.getElementById('product-subtitle').textContent = prod.subtitle || 'Collection Studio';
+            document.getElementById('modal-product-name').textContent = (prod.name || '').toUpperCase();
+            document.getElementById('modal-product-price').textContent = prod.price || '299,00 €';
+            
+            document.getElementById('desc-full-text').textContent = prod.description || 'Aucune description disponible.';
+            document.getElementById('spec-dimensions').textContent = prod.dimensions || 'N/A';
+            document.getElementById('spec-weight').textContent = prod.weight || 'N/A';
+            document.getElementById('spec-material').textContent = prod.material || 'N/A';
+            document.getElementById('spec-warranty').textContent = prod.warranty || 'N/A';
+            document.getElementById('spec-origin').textContent = prod.origin || 'N/A';
+
+            document.getElementById('link-vendor-amazon').href = prod.vendor_amazon || '#';
+            document.getElementById('link-vendor-wayfair').href = prod.vendor_wayfair || '#';
+            document.getElementById('link-vendor-ikea').href = prod.vendor_ikea || '#';
+
+            document.getElementById('amazon-price').textContent = prod.price || '299,00 €';
+            document.getElementById('wayfair-price').textContent = prod.price || '299,00 €';
+            document.getElementById('ikea-price').textContent = prod.price || '299,00 €';
+
+            if (prod.model_url) {
+                load3DModelFromURL(prod.model_url);
+            } else {
+                replaceCurrentModel(createChairModel(), "Modèle Standard");
+            }
+        }
+
+        function load3DModelFromURL(url) {
+            showLoading("Chargement du fichier 3D...");
+            const loader = new THREE.GLTFLoader();
+            loader.load(
+                url,
+                (gltf) => {
+                    replaceCurrentModel(gltf.scene, activeProduct?.name || "Modèle 3D");
+                    hideLoading();
+                },
+                (xhr) => {
+                    if (xhr.lengthComputable) {
+                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                        const loadingBar = document.getElementById('loading-bar');
+                        if (loadingBar) loadingBar.style.width = percent + '%';
+                    }
+                },
+                (error) => {
+                    console.error("Erreur GLB:", error);
+                    showToast("Impossible de charger le modèle GLB. Modèle standard activé.", true);
+                    replaceCurrentModel(createChairModel(), "Erreur GLB");
+                    hideLoading();
+                }
+            );
+        }
+
+        function replaceCurrentModel(newObject, name) {
+            if (!scene) {
+                console.warn("Scene is not initialized yet.");
+                return;
+            }
+
+            if (currentModel) {
+                scene.remove(currentModel);
+                currentModel = null;
+            }
+
+            currentModel = newObject;
+            fitModelToStage(currentModel);
+            scene.add(currentModel);
+            hideLoading();
+        }
+
+        async function loadAdminProducts() {
+            const listEl = document.getElementById('admin-products-list');
+            if (!listEl) return;
+
+            if (!supabaseClient) {
+                listEl.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-amber-500 dark:text-amber-400 font-medium">Veuillez d'abord renseigner vos clés API Supabase ci-dessus.</td></tr>`;
+                return;
+            }
+
+            listEl.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Chargement de la base Supabase...</td></tr>`;
+
+            try {
+                const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+                
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    listEl.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Aucun produit trouvé dans Supabase. Créez-en un via le formulaire ci-dessus !</td></tr>`;
+                    return;
+                }
+
+                listEl.innerHTML = data.map(p => `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                        <td class="p-3 font-medium text-slate-900 dark:text-white">${p.name}</td>
+                        <td class="p-3 font-mono text-slate-500 dark:text-slate-400 text-[11px]">${p.ean || '-'}</td>
+                        <td class="p-3 text-red-500 font-semibold">${p.price || '-'}</td>
+                        <td class="p-3 font-mono text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[200px]" title="${p.model_url}">${p.model_url}</td>
+                        <td class="p-3 text-right space-x-2 shrink-0">
+                            <button onclick="viewProductInStudio('${p.id}')" title="Visualiser dans le studio 3D" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            <button onclick="editProduct('${p.id}')" title="Éditer" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteProduct('${p.id}')" title="Supprimer" class="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (err) {
+                console.error(err);
+                listEl.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Erreur lors du chargement des produits.</td></tr>`;
+            }
+        }
+
+        window.viewProductInStudio = function(id) {
+            switchView('client');
+            const url = new URL(window.location);
+            url.searchParams.set('id', id);
+            window.history.pushState({}, '', url);
+            fetchProductData();
+        };
+
+        window.editProduct = async function(id) {
+            if (!supabaseClient) return;
+            const { data } = await supabaseClient.from('products').select('*').eq('id', id).single();
+            if (!data) return;
+
+            document.getElementById('form-product-id').value = data.id;
+            document.getElementById('form-name').value = data.name || '';
+            document.getElementById('form-ean').value = data.ean || '';
+            document.getElementById('form-price').value = data.price || '';
+            document.getElementById('form-model-url').value = data.model_url || '';
+            document.getElementById('form-subtitle').value = data.subtitle || '';
+            document.getElementById('form-description').value = data.description || '';
+            document.getElementById('form-dimensions').value = data.dimensions || '';
+            document.getElementById('form-weight').value = data.weight || '';
+            document.getElementById('form-material').value = data.material || '';
+            document.getElementById('form-vendor-amazon').value = data.vendor_amazon || '';
+            document.getElementById('form-vendor-wayfair').value = data.vendor_wayfair || '';
+            document.getElementById('form-vendor-ikea').value = data.vendor_ikea || '';
+
+            document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-pen text-indigo-500"></i> Modifier le produit`;
+            document.getElementById('btn-reset-form').classList.remove('hidden');
+        };
+
+        window.deleteProduct = async function(id) {
+            if (!supabaseClient) return;
+            showLoading("Suppression du produit...");
+            const { error } = await supabaseClient.from('products').delete().eq('id', id);
+            hideLoading();
+            if (error) {
+                showToast("Erreur de suppression", true);
+            } else {
+                showToast("Produit supprimé !");
+                loadAdminProducts();
+            }
+        };
+
+        function resetForm() {
+            document.getElementById('form-product-id').value = '';
+            document.getElementById('product-form').reset();
+            document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-plus text-red-500"></i> Ajouter un Produit 3D`;
+            document.getElementById('btn-reset-form').classList.add('hidden');
+        }
+
+        function initStudioScene() {
+            const canvas = document.getElementById('webgl-canvas');
+            if (!canvas) return;
+            
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff);
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(5, 4, 7);
+
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, preserveDrawingBuffer: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.15;
+            controls.target.copy(defaultTarget);
+            
+            controls.minPolarAngle = 0.001;
+            controls.maxPolarAngle = Math.PI;
+
+            controls.minDistance = initialCameraDistance / 10.0; 
+            controls.maxDistance = initialCameraDistance * 3.0; 
+            
+            controls.screenSpacePanning = true; 
+            controls.panSpeed = 1.5;
+            
+            controls.addEventListener('change', updateZoomBadge);
+
+            const stopIntroOnInteraction = () => {
+                if (isGuideAnimating) stopGuideAnimation();
+            };
+            canvas.addEventListener('mousedown', stopIntroOnInteraction);
+            canvas.addEventListener('touchstart', stopIntroOnInteraction);
+            canvas.addEventListener('wheel', stopIntroOnInteraction);
+
+            ambientLight = new THREE.AmbientLight(0xffffff, baseLightIntensities.ambient * 1.8);
+            scene.add(ambientLight);
+
+            hemiLight = new THREE.HemisphereLight(0xffffff, 0xf0f0f5, baseLightIntensities.hemi * 1.8);
+            hemiLight.position.set(0, 20, 0);
+            scene.add(hemiLight);
+
+            mainLight = new THREE.DirectionalLight(0xffffff, baseLightIntensities.main * 1.8);
+            mainLight.position.set(8, 12, 8);
+            mainLight.castShadow = true;
+            mainLight.shadow.mapSize.width = 2048;
+            mainLight.shadow.mapSize.height = 2048;
+            mainLight.shadow.bias = -0.0001;
+            scene.add(mainLight);
+
+            fillLight = new THREE.DirectionalLight(0xffffff, baseLightIntensities.fill * 1.8);
+            fillLight.position.set(-8, 8, -6);
+            scene.add(fillLight);
+
+            const shadowGeo = new THREE.PlaneGeometry(30, 30);
+            const shadowMat = new THREE.ShadowMaterial({ opacity: 0.08 });
+            shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
+            shadowPlane.rotation.x = -Math.PI / 2;
+            shadowPlane.position.y = 0;
+            shadowPlane.receiveShadow = true;
+            scene.add(shadowPlane);
+
+            window.addEventListener('resize', onWindowResize);
+            updateZoomBadge();
+        }
+
+        function onWindowResize() {
+            if (!camera || !renderer) return;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function setupEvents() {
+            const drawer = document.getElementById('drawer-panel');
+            const chevron = document.getElementById('drawer-chevron-icon');
+
+            const toggleDrawer = (open) => {
+                if (!drawer) return;
+                if (open) {
+                    drawer.classList.remove('translate-x-full');
+                    if (chevron) chevron.className = "fa-solid fa-chevron-right text-sm";
+                } else {
+                    drawer.classList.add('translate-x-full');
+                    if (chevron) chevron.className = "fa-solid fa-chevron-left text-sm";
+                }
+            };
+
+            document.getElementById('btn-open-drawer')?.addEventListener('click', () => {
+                const isOpen = !drawer.classList.contains('translate-x-full');
+                toggleDrawer(!isOpen);
+            });
+
+            document.getElementById('btn-open-desc-tab')?.addEventListener('click', () => toggleDrawer(true));
+            document.getElementById('btn-close-drawer')?.addEventListener('click', () => toggleDrawer(false));
+
+            document.getElementById('btn-theme-toggle')?.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                const isDark = document.documentElement.classList.contains('dark');
+                if (scene) scene.background = new THREE.Color(isDark ? 0x0f0f11 : 0xffffff);
+                showToast(isDark ? "Mode Sombre Activé" : "Mode Clair Activé");
+            });
+
+            document.getElementById('btn-replay-guide')?.addEventListener('click', startGuideAnimation);
+
+            // Modal Vendors
+            const modal = document.getElementById('availability-modal');
+            const modalBtn = document.getElementById('btn-availability');
+            const closeBtn = document.getElementById('btn-close-modal');
+            const modalCard = document.getElementById('modal-card');
+
+            modalBtn?.addEventListener('click', () => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modalCard.classList.remove('scale-95');
+            });
+
+            closeBtn?.addEventListener('click', () => {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modalCard.classList.add('scale-95');
+            });
+
+            // Admin Auth Modal handlers
+            document.getElementById('btn-close-auth-modal')?.addEventListener('click', closeAdminAuthModal);
+
+            document.getElementById('admin-auth-form')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const pin = document.getElementById('admin-pin-input').value.trim();
+                
+                // Vérification avec la constante configurable CONFIG_ADMIN_PIN
+                if (pin === CONFIG_ADMIN_PIN) {
+                    isAdminAuthenticated = true;
+                    sessionStorage.setItem('adminAuth', 'true');
+                    closeAdminAuthModal();
+                    showToast("Accès Admin autorisé !");
+                    switchView('admin');
+                } else {
+                    showToast("Code PIN incorrect.", true);
+                }
+            });
+
+            // Secret Keyboard Shortcut (Ctrl + Shift + A)
+            window.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+                    e.preventDefault();
+                    requestAdminAccess();
+                }
+            });
+
+            if (sessionStorage.getItem('adminAuth') === 'true') {
+                isAdminAuthenticated = true;
+            }
+
+            // Admin Save API Key
+            document.getElementById('btn-save-config')?.addEventListener('click', () => {
+                const url = document.getElementById('admin-supabase-url').value.trim();
+                const key = document.getElementById('admin-supabase-key').value.trim();
+
+                localStorage.setItem('supabaseUrl', url);
+                localStorage.setItem('supabaseKey', key);
+
+                initSupabase();
+                showToast("Clés Supabase enregistrées !");
+                loadAdminProducts();
+                fetchProductData();
+            });
+
+            document.getElementById('btn-refresh-list')?.addEventListener('click', loadAdminProducts);
+            document.getElementById('btn-reset-form')?.addEventListener('click', resetForm);
+
+            // Admin Submit Form
+            document.getElementById('product-form')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!supabaseClient) {
+                    showToast("Configurez Supabase d'abord.", true);
+                    return;
+                }
+
+                const productId = document.getElementById('form-product-id').value;
+                const payload = {
+                    name: document.getElementById('form-name').value.trim(),
+                    ean: document.getElementById('form-ean').value.trim() || null,
+                    price: document.getElementById('form-price').value.trim(),
+                    model_url: document.getElementById('form-model-url').value.trim(),
+                    subtitle: document.getElementById('form-subtitle').value.trim() || 'Collection Studio • Modèle 3D Haute Définition',
+                    description: document.getElementById('form-description').value.trim() || null,
+                    dimensions: document.getElementById('form-dimensions').value.trim() || '65 x 60 x 85 cm',
+                    weight: document.getElementById('form-weight').value.trim() || '8.5 kg',
+                    material: document.getElementById('form-material').value.trim() || 'Chêne massif & Aluminium',
+                    vendor_amazon: document.getElementById('form-vendor-amazon').value.trim() || 'https://www.amazon.com',
+                    vendor_wayfair: document.getElementById('form-vendor-wayfair').value.trim() || 'https://www.wayfair.com',
+                    vendor_ikea: document.getElementById('form-vendor-ikea').value.trim() || 'https://www.ikea.com',
+                };
+
+                showLoading("Sauvegarde dans Supabase...");
+
+                let error;
+                if (productId) {
+                    const res = await supabaseClient.from('products').update(payload).eq('id', productId);
+                    error = res.error;
+                } else {
+                    const res = await supabaseClient.from('products').insert([payload]);
+                    error = res.error;
+                }
+
+                hideLoading();
+
+                if (error) {
+                    console.error(error);
+                    showToast("Erreur lors de la sauvegarde", true);
+                } else {
+                    showToast(productId ? "Produit mis à jour !" : "Produit ajouté avec succès !");
+                    resetForm();
+                    loadAdminProducts();
+                }
+            });
+
+            // Handle hash route (#admin)
+            if (window.location.hash === '#admin') {
+                if (isAdminAuthenticated) {
+                    switchView('admin');
+                } else {
+                    requestAdminAccess();
+                }
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (currentViewMode === 'client') {
+                if (isGuideAnimating) {
+                    updateGuideAnimationStep(performance.now());
+                } else if (controls) {
+                    controls.update();
+                }
+
+                if (renderer && scene && camera) renderer.render(scene, camera);
+            }
+        }
+
+        window.onload = function () {
+            initStudioScene();
+            initSupabase();
+            setupEvents();
+            fetchProductData();
+
+            startGuideAnimation();
+            animate();
+        };
+    </script>
+</body>
+</html>
