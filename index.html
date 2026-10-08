@@ -105,12 +105,6 @@
             <span class="text-2xl font-light tracking-wider text-slate-900 dark:text-white uppercase select-none">
                 LOOKS <span class="text-xs font-semibold text-red-500 tracking-normal border border-red-500/30 px-2 py-0.5 rounded-full ml-1">3D</span>
             </span>
-
-            <!-- Admin Badge -->
-            <div id="admin-indicator-badge" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-[11px] font-medium">
-                <i class="fa-solid fa-lock text-[10px]"></i>
-                <span>Espace Admin</span>
-            </div>
         </div>
 
         <!-- CLIENT NAVIGATION TUTORIAL HINTS -->
@@ -365,204 +359,10 @@
         </div>
     </div>
 
-    <div id="admin-auth-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="glass-ui max-w-sm w-full rounded-3xl p-6 shadow-2xl space-y-4 transform scale-95 transition-transform duration-300" id="admin-auth-card">
-            
-            <div class="text-center space-y-2">
-                <div class="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center text-lg mx-auto">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
-                <h3 class="font-semibold text-slate-900 dark:text-white text-base">Espace Administrateur</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-light">Saisissez le mot de passe d'accès pour gérer le catalogue 3D.</p>
-            </div>
-
-            <form id="admin-auth-form" class="space-y-3">
-                <div>
-                    <input type="password" id="admin-pin-input" placeholder="Saisir votre Code PIN" 
-                        class="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-center tracking-widest text-sm focus:outline-none focus:border-red-500">
-                </div>
-                <div class="flex items-center gap-2">
-                    <button type="button" id="btn-close-auth-modal" class="w-1/2 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium">
-                        Annuler
-                    </button>
-                    <button type="submit" class="w-1/2 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-medium shadow-md">
-                        Valider
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <section id="view-admin" class="flex-1 w-full h-full pt-24 px-4 sm:px-8 pb-12 hidden overflow-y-auto custom-scrollbar bg-slate-100 dark:bg-slate-950 z-20">
-        
-        <div class="max-w-6xl mx-auto space-y-8">
-            
-            <!-- Header Section -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
-                <div>
-                    <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-500 mb-1">
-                        <i class="fa-solid fa-shield-halved"></i> Espace d'Administration
-                    </div>
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Gestionnaire du Catalogue Produits 3D</h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Gérez vos produits, liens Cloudflare R2 (.glb) et redirections marchands.</p>
-                </div>
-                
-                <div class="flex items-center gap-3">
-                    <button onclick="logoutAdmin()" class="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-red-500 text-slate-600 dark:text-slate-300 hover:text-red-500 text-xs font-medium transition flex items-center gap-2">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        <span>Quitter Admin</span>
-                    </button>
-                    <button onclick="switchView('client')" class="px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white text-xs font-medium tracking-wide transition flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-eye text-red-500"></i>
-                        <span>Visualiseur Client</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Supabase Database Connector Card -->
-            <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm space-y-4">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-200 flex items-center gap-2">
-                    <i class="fa-solid fa-database text-red-500"></i> Connecteur Supabase Database
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">URL Supabase</label>
-                        <input type="url" id="admin-supabase-url" placeholder="https://xyz.supabase.co" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Clé API Anon (Public Key)</label>
-                        <input type="text" id="admin-supabase-key" placeholder="eyJhbGciOiJIUzI1Ni..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono text-xs">
-                    </div>
-                </div>
-                <div class="flex justify-end">
-                    <button id="btn-save-config" class="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-medium uppercase tracking-wider transition shadow-sm">
-                        Connecter à Supabase
-                    </button>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 id="form-title" class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-200 flex items-center gap-2">
-                        <i class="fa-solid fa-plus text-red-500"></i> Ajouter un Produit 3D
-                    </h3>
-                    <button id="btn-reset-form" class="text-xs text-slate-500 hover:text-red-500 underline hidden">
-                        Annuler la modification
-                    </button>
-                </div>
-
-                <form id="product-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    <input type="hidden" id="form-product-id">
-
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Nom du Produit *</label>
-                        <input type="text" id="form-name" placeholder="ex: Chaise Ergonomique" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Code EAN (Code Barre)</label>
-                        <input type="text" id="form-ean" placeholder="ex: 370000000001" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500">
-                    </div>
-
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Prix Vente (€) *</label>
-                        <input type="text" id="form-price" placeholder="ex: 299,00 €" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500" required>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">URL Modèle 3D Cloudflare R2 (.glb) *</label>
-                        <input type="url" id="form-model-url" placeholder="https://pub-xxx.r2.dev/3d-models/chaise.glb" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Sous-titre / Collection</label>
-                        <input type="text" id="form-subtitle" placeholder="ex: Collection Studio 2026" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500">
-                    </div>
-
-                    <div class="md:col-span-3">
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Description "À propos du produit"</label>
-                        <textarea id="form-description" rows="2" placeholder="Saisir la description complète du produit..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500"></textarea>
-                    </div>
-
-                    <!-- Specs -->
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Dimensions</label>
-                        <input type="text" id="form-dimensions" placeholder="65 x 60 x 85 cm" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500">
-                    </div>
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Poids Net</label>
-                        <input type="text" id="form-weight" placeholder="8.5 kg" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500">
-                    </div>
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Matériaux</label>
-                        <input type="text" id="form-material" placeholder="Chêne massif & Aluminium" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500">
-                    </div>
-
-                    <!-- Vendor Links -->
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Lien Vendeur Amazon</label>
-                        <input type="url" id="form-vendor-amazon" placeholder="https://www.amazon.com/dp/..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Lien Vendeur Wayfair</label>
-                        <input type="url" id="form-vendor-wayfair" placeholder="https://www.wayfair.com/..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 uppercase text-[10px] mb-1">Lien Vendeur IKEA</label>
-                        <input type="url" id="form-vendor-ikea" placeholder="https://www.ikea.com/..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-mono">
-                    </div>
-
-                    <div class="md:col-span-3 flex justify-end gap-3 pt-2">
-                        <button type="submit" id="btn-submit-product" class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium uppercase tracking-wider transition shadow-sm">
-                            Enregistrer le produit
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Products Database Table -->
-            <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-200 flex items-center gap-2">
-                        <i class="fa-solid fa-cubes text-red-500"></i> Produits enregistrés dans la base
-                    </h3>
-                    <button id="btn-refresh-list" class="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition">
-                        <i class="fa-solid fa-rotate-right"></i> Actualiser
-                    </button>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="uppercase text-[10px] bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
-                            <tr>
-                                <th class="p-3 rounded-l-xl">Nom Produit</th>
-                                <th class="p-3">EAN</th>
-                                <th class="p-3">Prix</th>
-                                <th class="p-3">Fichier 3D (.glb)</th>
-                                <th class="p-3 text-right rounded-r-xl">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-products-list" class="divide-y divide-slate-200 dark:divide-slate-800">
-                            <tr>
-                                <td colspan="5" class="p-4 text-center text-slate-400">Chargement des produits...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
     <script>
-        // =========================================================
-        // CONFIGURATION PARAMETERS (MODIFIEZ VOTRE CODE PIN ICI)
-        // =========================================================
-        const CONFIG_ADMIN_PIN = "1234"; // Vous pouvez changer ce mot de passe à tout moment !
-
         let scene, camera, renderer, controls;
         let currentModel = null;
         let shadowPlane = null;
@@ -580,86 +380,6 @@
         // Supabase & Active Product State
         let supabaseClient = null;
         let activeProduct = null;
-        let currentViewMode = 'client';
-        let isAdminAuthenticated = false;
-
-        function requestAdminAccess() {
-            if (isAdminAuthenticated) {
-                switchView('admin');
-                return;
-            }
-
-            const modal = document.getElementById('admin-auth-modal');
-            const card = document.getElementById('admin-auth-card');
-            const input = document.getElementById('admin-pin-input');
-
-            if (modal && card) {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                card.classList.remove('scale-95');
-                if (input) {
-                    input.value = '';
-                    setTimeout(() => input.focus(), 100);
-                }
-            }
-        }
-
-        function closeAdminAuthModal() {
-            const modal = document.getElementById('admin-auth-modal');
-            const card = document.getElementById('admin-auth-card');
-            if (modal && card) {
-                modal.classList.add('opacity-0', 'pointer-events-none');
-                card.classList.add('scale-95');
-            }
-        }
-
-        function logoutAdmin() {
-            isAdminAuthenticated = false;
-            sessionStorage.removeItem('adminAuth');
-            showToast("Déconnexion de l'Espace Admin");
-            switchView('client');
-        }
-
-        function switchView(mode) {
-            if (mode === 'admin' && !isAdminAuthenticated) {
-                requestAdminAccess();
-                return;
-            }
-
-            currentViewMode = mode;
-            const clientView = document.getElementById('view-client');
-            const adminView = document.getElementById('view-admin');
-            const clientHints = document.getElementById('header-client-hints');
-            const btnDesc = document.getElementById('btn-open-desc-tab');
-            const zoomBadge = document.getElementById('zoom-badge');
-            const drawerBtn = document.getElementById('btn-open-drawer');
-            const adminBadge = document.getElementById('admin-indicator-badge');
-
-            if (mode === 'admin') {
-                clientView.classList.add('hidden');
-                adminView.classList.remove('hidden');
-
-                if (clientHints) clientHints.classList.add('hidden');
-                if (btnDesc) btnDesc.classList.add('hidden');
-                if (zoomBadge) zoomBadge.classList.add('hidden');
-                if (drawerBtn) drawerBtn.classList.add('hidden');
-                if (adminBadge) adminBadge.classList.remove('hidden'), adminBadge.classList.add('flex');
-
-                loadAdminProducts();
-                window.location.hash = 'admin';
-            } else {
-                adminView.classList.add('hidden');
-                clientView.classList.remove('hidden');
-
-                if (clientHints) clientHints.classList.remove('hidden');
-                if (btnDesc) btnDesc.classList.remove('hidden');
-                if (zoomBadge) zoomBadge.classList.remove('hidden');
-                if (drawerBtn) drawerBtn.classList.remove('hidden');
-                if (adminBadge) adminBadge.classList.add('hidden'), adminBadge.classList.remove('flex');
-
-                onWindowResize();
-                window.location.hash = '';
-            }
-        }
 
         function showToast(message, isError = false) {
             const container = document.getElementById('toast-container');
@@ -858,8 +578,6 @@
             if (url && key && window.supabase) {
                 try {
                     supabaseClient = window.supabase.createClient(url, key);
-                    document.getElementById('admin-supabase-url').value = url;
-                    document.getElementById('admin-supabase-key').value = key;
                 } catch (e) {
                     console.error("Erreur d'initialisation Supabase:", e);
                 }
@@ -988,104 +706,6 @@
             hideLoading();
         }
 
-        async function loadAdminProducts() {
-            const listEl = document.getElementById('admin-products-list');
-            if (!listEl) return;
-
-            if (!supabaseClient) {
-                listEl.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-amber-500 dark:text-amber-400 font-medium">Veuillez d'abord renseigner vos clés API Supabase ci-dessus.</td></tr>`;
-                return;
-            }
-
-            listEl.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Chargement de la base Supabase...</td></tr>`;
-
-            try {
-                const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
-                
-                if (error) throw error;
-
-                if (!data || data.length === 0) {
-                    listEl.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Aucun produit trouvé dans Supabase. Créez-en un via le formulaire ci-dessus !</td></tr>`;
-                    return;
-                }
-
-                listEl.innerHTML = data.map(p => `
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
-                        <td class="p-3 font-medium text-slate-900 dark:text-white">${p.name}</td>
-                        <td class="p-3 font-mono text-slate-500 dark:text-slate-400 text-[11px]">${p.ean || '-'}</td>
-                        <td class="p-3 text-red-500 font-semibold">${p.price || '-'}</td>
-                        <td class="p-3 font-mono text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[200px]" title="${p.model_url}">${p.model_url}</td>
-                        <td class="p-3 text-right space-x-2 shrink-0">
-                            <button onclick="viewProductInStudio('${p.id}')" title="Visualiser dans le studio 3D" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition">
-                                <i class="fa-solid fa-eye"></i>
-                            </button>
-                            <button onclick="editProduct('${p.id}')" title="Éditer" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button onclick="deleteProduct('${p.id}')" title="Supprimer" class="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-
-            } catch (err) {
-                console.error(err);
-                listEl.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Erreur lors du chargement des produits.</td></tr>`;
-            }
-        }
-
-        window.viewProductInStudio = function(id) {
-            switchView('client');
-            const url = new URL(window.location);
-            url.searchParams.set('id', id);
-            window.history.pushState({}, '', url);
-            fetchProductData();
-        };
-
-        window.editProduct = async function(id) {
-            if (!supabaseClient) return;
-            const { data } = await supabaseClient.from('products').select('*').eq('id', id).single();
-            if (!data) return;
-
-            document.getElementById('form-product-id').value = data.id;
-            document.getElementById('form-name').value = data.name || '';
-            document.getElementById('form-ean').value = data.ean || '';
-            document.getElementById('form-price').value = data.price || '';
-            document.getElementById('form-model-url').value = data.model_url || '';
-            document.getElementById('form-subtitle').value = data.subtitle || '';
-            document.getElementById('form-description').value = data.description || '';
-            document.getElementById('form-dimensions').value = data.dimensions || '';
-            document.getElementById('form-weight').value = data.weight || '';
-            document.getElementById('form-material').value = data.material || '';
-            document.getElementById('form-vendor-amazon').value = data.vendor_amazon || '';
-            document.getElementById('form-vendor-wayfair').value = data.vendor_wayfair || '';
-            document.getElementById('form-vendor-ikea').value = data.vendor_ikea || '';
-
-            document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-pen text-indigo-500"></i> Modifier le produit`;
-            document.getElementById('btn-reset-form').classList.remove('hidden');
-        };
-
-        window.deleteProduct = async function(id) {
-            if (!supabaseClient) return;
-            showLoading("Suppression du produit...");
-            const { error } = await supabaseClient.from('products').delete().eq('id', id);
-            hideLoading();
-            if (error) {
-                showToast("Erreur de suppression", true);
-            } else {
-                showToast("Produit supprimé !");
-                loadAdminProducts();
-            }
-        };
-
-        function resetForm() {
-            document.getElementById('form-product-id').value = '';
-            document.getElementById('product-form').reset();
-            document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-plus text-red-500"></i> Ajouter un Produit 3D`;
-            document.getElementById('btn-reset-form').classList.add('hidden');
-        }
-
         function initStudioScene() {
             const canvas = document.getElementById('webgl-canvas');
             if (!canvas) return;
@@ -1212,124 +832,18 @@
                 modal.classList.add('opacity-0', 'pointer-events-none');
                 modalCard.classList.add('scale-95');
             });
-
-            // Admin Auth Modal handlers
-            document.getElementById('btn-close-auth-modal')?.addEventListener('click', closeAdminAuthModal);
-
-            document.getElementById('admin-auth-form')?.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const pin = document.getElementById('admin-pin-input').value.trim();
-                
-                // Vérification avec la constante configurable CONFIG_ADMIN_PIN
-                if (pin === CONFIG_ADMIN_PIN) {
-                    isAdminAuthenticated = true;
-                    sessionStorage.setItem('adminAuth', 'true');
-                    closeAdminAuthModal();
-                    showToast("Accès Admin autorisé !");
-                    switchView('admin');
-                } else {
-                    showToast("Code PIN incorrect.", true);
-                }
-            });
-
-            // Secret Keyboard Shortcut (Ctrl + Shift + A)
-            window.addEventListener('keydown', (e) => {
-                if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
-                    e.preventDefault();
-                    requestAdminAccess();
-                }
-            });
-
-            if (sessionStorage.getItem('adminAuth') === 'true') {
-                isAdminAuthenticated = true;
-            }
-
-            // Admin Save API Key
-            document.getElementById('btn-save-config')?.addEventListener('click', () => {
-                const url = document.getElementById('admin-supabase-url').value.trim();
-                const key = document.getElementById('admin-supabase-key').value.trim();
-
-                localStorage.setItem('supabaseUrl', url);
-                localStorage.setItem('supabaseKey', key);
-
-                initSupabase();
-                showToast("Clés Supabase enregistrées !");
-                loadAdminProducts();
-                fetchProductData();
-            });
-
-            document.getElementById('btn-refresh-list')?.addEventListener('click', loadAdminProducts);
-            document.getElementById('btn-reset-form')?.addEventListener('click', resetForm);
-
-            // Admin Submit Form
-            document.getElementById('product-form')?.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!supabaseClient) {
-                    showToast("Configurez Supabase d'abord.", true);
-                    return;
-                }
-
-                const productId = document.getElementById('form-product-id').value;
-                const payload = {
-                    name: document.getElementById('form-name').value.trim(),
-                    ean: document.getElementById('form-ean').value.trim() || null,
-                    price: document.getElementById('form-price').value.trim(),
-                    model_url: document.getElementById('form-model-url').value.trim(),
-                    subtitle: document.getElementById('form-subtitle').value.trim() || 'Collection Studio • Modèle 3D Haute Définition',
-                    description: document.getElementById('form-description').value.trim() || null,
-                    dimensions: document.getElementById('form-dimensions').value.trim() || '65 x 60 x 85 cm',
-                    weight: document.getElementById('form-weight').value.trim() || '8.5 kg',
-                    material: document.getElementById('form-material').value.trim() || 'Chêne massif & Aluminium',
-                    vendor_amazon: document.getElementById('form-vendor-amazon').value.trim() || 'https://www.amazon.com',
-                    vendor_wayfair: document.getElementById('form-vendor-wayfair').value.trim() || 'https://www.wayfair.com',
-                    vendor_ikea: document.getElementById('form-vendor-ikea').value.trim() || 'https://www.ikea.com',
-                };
-
-                showLoading("Sauvegarde dans Supabase...");
-
-                let error;
-                if (productId) {
-                    const res = await supabaseClient.from('products').update(payload).eq('id', productId);
-                    error = res.error;
-                } else {
-                    const res = await supabaseClient.from('products').insert([payload]);
-                    error = res.error;
-                }
-
-                hideLoading();
-
-                if (error) {
-                    console.error(error);
-                    showToast("Erreur lors de la sauvegarde", true);
-                } else {
-                    showToast(productId ? "Produit mis à jour !" : "Produit ajouté avec succès !");
-                    resetForm();
-                    loadAdminProducts();
-                }
-            });
-
-            // Handle hash route (#admin)
-            if (window.location.hash === '#admin') {
-                if (isAdminAuthenticated) {
-                    switchView('admin');
-                } else {
-                    requestAdminAccess();
-                }
-            }
         }
 
         function animate() {
             requestAnimationFrame(animate);
 
-            if (currentViewMode === 'client') {
-                if (isGuideAnimating) {
-                    updateGuideAnimationStep(performance.now());
-                } else if (controls) {
-                    controls.update();
-                }
-
-                if (renderer && scene && camera) renderer.render(scene, camera);
+            if (isGuideAnimating) {
+                updateGuideAnimationStep(performance.now());
+            } else if (controls) {
+                controls.update();
             }
+
+            if (renderer && scene && camera) renderer.render(scene, camera);
         }
 
         window.onload = function () {
