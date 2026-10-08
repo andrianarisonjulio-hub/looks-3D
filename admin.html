@@ -81,10 +81,10 @@
             
             <div class="space-y-1">
                 <h1 class="font-semibold text-white text-lg tracking-wide uppercase">LOOKS Admin</h1>
-                <p class="text-xs text-slate-400 font-light">Connexion sécurisée au catalogue 3D</p>
+                <p class="text-xs text-slate-400 font-light">Connexion sécurisée Supabase</p>
             </div>
 
-            <!-- Configuration des clés Supabase directement ici si non configurées -->
+            <!-- Formulaire de connexion Supabase -->
             <form id="login-form" class="space-y-4 text-left text-xs">
                 <div>
                     <label class="block text-slate-400 uppercase text-[10px] mb-1">URL Supabase</label>
@@ -97,9 +97,14 @@
                         class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-red-500 font-mono text-xs">
                 </div>
                 <div>
-                    <label class="block text-slate-400 uppercase text-[10px] mb-1">Code PIN Admin</label>
-                    <input type="password" id="login-pin" placeholder="Saisir le code PIN" required
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-center tracking-widest text-sm focus:outline-none focus:border-red-500">
+                    <label class="block text-slate-400 uppercase text-[10px] mb-1">Email Administrateur</label>
+                    <input type="email" id="login-email" placeholder="admin@exemple.com" required
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-red-500">
+                </div>
+                <div>
+                    <label class="block text-slate-400 uppercase text-[10px] mb-1">Mot de passe</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-red-500">
                 </div>
 
                 <button type="submit" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium uppercase tracking-wider transition shadow-lg shadow-red-600/30">
@@ -124,7 +129,7 @@
                 </div>
                 
                 <div class="flex items-center gap-3">
-                    <a id="link-client-preview" href="app.html" target="_blank" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white text-xs font-medium tracking-wide transition flex items-center gap-2 shadow-sm">
+                    <a id="link-client-preview" href="index.html" target="_blank" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white text-xs font-medium tracking-wide transition flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-eye text-red-500"></i>
                         <span>Ouvrir le Visualiseur Client</span>
                     </a>
@@ -253,7 +258,6 @@
     <div id="toast-container" class="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
     <script>
-        const ADMIN_PIN_SECRET = "1234"; // Code PIN modifiable ici
         let supabaseClient = null;
 
         function showToast(message, isError = false) {
@@ -286,16 +290,24 @@
             }
         }
 
-        function checkAuthSession() {
-            if (sessionStorage.getItem('adminAuth') === 'true') {
+        async function checkAuthSession() {
+            if (!supabaseClient) return;
+            
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('admin-dashboard').classList.remove('hidden');
                 loadAdminProducts();
+            } else {
+                document.getElementById('admin-dashboard').classList.add('hidden');
+                document.getElementById('auth-screen').classList.remove('hidden');
             }
         }
 
-        function logoutAdmin() {
-            sessionStorage.removeItem('adminAuth');
+        async function logoutAdmin() {
+            if (supabaseClient) {
+                await supabaseClient.auth.signOut();
+            }
             document.getElementById('admin-dashboard').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
             showToast("Déconnexion réussie");
@@ -322,7 +334,7 @@
                         <td class="p-3.5 text-red-500 font-semibold">${p.price || '-'}</td>
                         <td class="p-3.5 font-mono text-[10px] text-slate-400 truncate max-w-[220px]" title="${p.model_url}">${p.model_url}</td>
                         <td class="p-3.5 text-right space-x-2 shrink-0">
-                            <a href="app.html?id=${p.id}" target="_blank" title="Voir dans le visualiseur" class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-600 hover:text-white transition">
+                            <a href="index.html?id=${p.id}" target="_blank" title="Voir dans le visualiseur" class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-600 hover:text-white transition">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
                             <button onclick="editProduct('${p.id}')" title="Éditer" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-600 hover:text-white transition">
@@ -384,25 +396,31 @@
             document.getElementById('btn-reset-form').classList.add('hidden');
         }
 
-        document.getElementById('login-form').addEventListener('submit', (e) => {
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const url = document.getElementById('login-supabase-url').value.trim();
             const key = document.getElementById('login-supabase-key').value.trim();
-            const pin = document.getElementById('login-pin').value.trim();
-
-            if (pin !== ADMIN_PIN_SECRET) {
-                showToast("Code PIN administrateur incorrect", true);
-                return;
-            }
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
 
             try {
                 localStorage.setItem('supabaseUrl', url);
                 localStorage.setItem('supabaseKey', key);
                 supabaseClient = window.supabase.createClient(url, key);
 
-                sessionStorage.setItem('adminAuth', 'true');
-                showToast("Connexion administrateur établie !");
-                checkAuthSession();
+                // Authentification sécurisée Supabase
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    showToast("Échec de connexion : " + error.message, true);
+                    return;
+                }
+
+                showToast("Connexion réussie !");
+                await checkAuthSession();
             } catch (err) {
                 showToast("Erreur de connexion à l'API Supabase", true);
             }
@@ -450,9 +468,9 @@
         document.getElementById('btn-reset-form').addEventListener('click', resetForm);
         document.getElementById('btn-refresh-list').addEventListener('click', loadAdminProducts);
 
-        window.onload = function() {
+        window.onload = async function() {
             initSupabaseFromStorage();
-            checkAuthSession();
+            await checkAuthSession();
         };
     </script>
 </body>
