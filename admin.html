@@ -144,11 +144,6 @@
                 </div>
                 
                 <div class="flex items-center gap-2.5 flex-wrap">
-                    <button onclick="openSqlModal()" class="px-3.5 py-2.5 rounded-xl bg-indigo-600/10 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-500/30 text-xs font-medium transition flex items-center gap-2 shadow-sm" title="Script SQL Supabase">
-                        <i class="fa-solid fa-database"></i>
-                        <span>Configuration Supabase</span>
-                    </button>
-
                     <button onclick="toggleTheme()" class="theme-toggle-btn px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-medium transition flex items-center gap-2 shadow-sm" title="Changer le mode d'affichage">
                         <i class="theme-toggle-icon fa-solid fa-moon text-indigo-600 dark:text-amber-400"></i>
                         <span class="theme-toggle-text hidden sm:inline">Mode Sombre</span>
@@ -264,13 +259,13 @@
                         </div>
                     </div>
 
-                    <!-- GESTION DYNAMIQUE ET TOTALE DES VENDEURS ET PARTENAIRES -->
+                    <!-- GESTION DYNAMIQUE DES VENDEURS -->
                     <div class="md:col-span-3 border-t border-slate-200 dark:border-slate-800/80 pt-4 mt-2">
                         <div class="space-y-3 bg-slate-100/50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <div>
                                     <div class="flex items-center gap-2 text-red-500 font-bold uppercase text-[11px]">
-                                        <i class="fa-solid fa-cart-shopping"></i> Gestion Dynamique des Vendeurs & Liens (Contrôle Total)
+                                        <i class="fa-solid fa-cart-shopping"></i> Gestion Dynamique des Vendeurs & Liens
                                     </div>
                                     <p class="text-[11px] text-slate-500 dark:text-slate-400 font-light">Ajoutez autant de vendeurs que vous souhaitez (Amazon, IKEA, Wayfair, Fnac, site web dédié, etc.).</p>
                                 </div>
@@ -350,30 +345,6 @@
         </div>
     </div>
 
-    <!-- SQL SETUP HELPER MODAL -->
-    <div id="sql-modal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="glass-ui max-w-2xl w-full rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 transform scale-95 transition-transform duration-300" id="sql-modal-card">
-            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-                <div class="flex items-center gap-2 text-indigo-500 font-bold text-sm uppercase">
-                    <i class="fa-solid fa-database"></i> Script SQL Supabase
-                </div>
-                <button type="button" onclick="closeSqlModal()" class="w-8 h-8 rounded-full bg-slate-200/80 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-red-500 transition">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                Si l'ajout échoue, vérifiez que votre table <code class="font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-red-500">products</code> dispose des bonnes colonnes et règles RLS. Exécutez ce script dans l'éditeur SQL de Supabase :
-            </p>
-            <pre id="sql-code-block" class="bg-slate-900 text-slate-200 p-4 rounded-2xl text-[11px] font-mono overflow-x-auto max-h-60 custom-scrollbar border border-slate-800 select-all"></pre>
-            <div class="flex justify-between items-center pt-2">
-                <span class="text-[10px] text-slate-400">Cliquez sur Copier puis collez dans Supabase > SQL Editor > Run</span>
-                <button type="button" onclick="copySqlCode()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition shadow-md flex items-center gap-2">
-                    <i class="fa-solid fa-copy"></i> Copier le SQL
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- TOAST NOTIFICATIONS -->
     <div id="toast-container" class="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
@@ -382,39 +353,6 @@
         let currentSelectedColumns = 1;
         let activeDeleteId = null;
 
-        const SQL_SCHEMA_SCRIPT = `CREATE TABLE IF NOT EXISTS public.products (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    name TEXT NOT NULL,
-    ean TEXT,
-    price TEXT NOT NULL,
-    model_url TEXT NOT NULL,
-    subtitle TEXT,
-    about_title TEXT,
-    description TEXT,
-    specs_title TEXT,
-    specs_columns INT DEFAULT 1,
-    tech_specs JSONB,
-    vendors JSONB,
-    dimensions TEXT,
-    weight TEXT,
-    material TEXT,
-    vendor_amazon TEXT,
-    vendor_wayfair TEXT,
-    vendor_ikea TEXT
-);
-
--- Activation de RLS
-ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
-
--- Politiques RLS
-DROP POLICY IF EXISTS "Allow Public Read" ON public.products;
-CREATE POLICY "Allow Public Read" ON public.products FOR SELECT USING (true);
-
-DROP POLICY IF EXISTS "Allow Authenticated All" ON public.products;
-CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authenticated USING (true) WITH CHECK (true);`;
-
-        /* Presets par défaut */
         const defaultSpecsPreset = [
             { label: 'Dimensions', value: '65 x 60 x 85 cm' },
             { label: 'Poids Net', value: '8.5 kg' },
@@ -478,7 +416,7 @@ CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authentica
             setTimeout(() => {
                 toast.classList.add('translate-y-2', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
-            }, isError ? 6000 : 3000);
+            }, isError ? 7000 : 3000);
         }
 
         function setSpecsColumns(cols) {
@@ -644,31 +582,11 @@ CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authentica
             renderVendorsBuilderRows(current);
         }
 
-        function openSqlModal() {
-            const modal = document.getElementById('sql-modal');
-            const card = document.getElementById('sql-modal-card');
-            document.getElementById('sql-code-block').textContent = SQL_SCHEMA_SCRIPT;
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            card.classList.remove('scale-95');
-        }
-
-        function closeSqlModal() {
-            const modal = document.getElementById('sql-modal');
-            const card = document.getElementById('sql-modal-card');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            card.classList.add('scale-95');
-        }
-
-        function copySqlCode() {
-            navigator.clipboard.writeText(SQL_SCHEMA_SCRIPT);
-            showToast("Code SQL copié dans le presse-papier !");
-        }
-
         function initSupabaseFromStorage() {
             const url = localStorage.getItem('supabaseUrl');
             const key = localStorage.getItem('supabaseKey');
             
-            if (url && key && window.supabase) {
+            if (url && key) {
                 document.getElementById('login-supabase-url').value = url;
                 document.getElementById('login-supabase-key').value = key;
                 try {
@@ -682,20 +600,16 @@ CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authentica
         async function checkAuthSession() {
             if (!supabaseClient) return;
             
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session) {
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    document.getElementById('admin-dashboard').classList.remove('hidden');
-                    renderSpecsBuilderRows(defaultSpecsPreset);
-                    renderVendorsBuilderRows(defaultVendorsPreset);
-                    loadAdminProducts();
-                } else {
-                    document.getElementById('admin-dashboard').classList.add('hidden');
-                    document.getElementById('auth-screen').classList.remove('hidden');
-                }
-            } catch (err) {
-                console.error("Erreur de session:", err);
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+                renderSpecsBuilderRows(defaultSpecsPreset);
+                renderVendorsBuilderRows(defaultVendorsPreset);
+                loadAdminProducts();
+            } else {
+                document.getElementById('admin-dashboard').classList.add('hidden');
+                document.getElementById('auth-screen').classList.remove('hidden');
             }
         }
 
@@ -730,7 +644,6 @@ CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authentica
                             if (Array.isArray(parsed)) specsCount = parsed.length;
                         } catch(e) {}
                     }
-                    if (specsCount === 0 && (p.dimensions || p.material)) specsCount = 3;
 
                     let vendorsCount = 0;
                     if (p.vendors) {
@@ -739,7 +652,6 @@ CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authentica
                             if (Array.isArray(parsedV)) vendorsCount = parsedV.length;
                         } catch(e) {}
                     }
-                    if (vendorsCount === 0 && (p.vendor_amazon || p.vendor_wayfair || p.vendor_ikea)) vendorsCount = 3;
 
                     return `
                     <tr class="hover:bg-slate-200/50 dark:hover:bg-slate-900/60 transition">
@@ -772,14 +684,14 @@ CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authentica
                 `}).join('');
             } catch (err) {
                 console.error(err);
-                listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erreur lors du chargement: ${err.message || 'Vérifiez Supabase'}.</td></tr>`;
+                listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erreur lors du chargement : ${err.message || 'Vérifiez la table Supabase'}.</td></tr>`;
             }
         }
 
         window.editProduct = async function(id) {
             if (!supabaseClient) return;
-            const { data, error } = await supabaseClient.from('products').select('*').eq('id', id).single();
-            if (error || !data) return;
+            const { data } = await supabaseClient.from('products').select('*').eq('id', id).single();
+            if (!data) return;
 
             document.getElementById('form-product-id').value = data.id;
             document.getElementById('form-name').value = data.name || '';
@@ -799,15 +711,6 @@ CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authentica
                     specsArray = typeof data.tech_specs === 'string' ? JSON.parse(data.tech_specs) : data.tech_specs;
                 } catch(e) {}
             }
-            if (!Array.isArray(specsArray) || specsArray.length === 0) {
-                specsArray = [
-                    { label: 'Dimensions', value: data.dimensions || '65 x 60 x 85 cm' },
-                    { label: 'Poids Net', value: data.weight || '8.5 kg' },
-                    { label: 'Matériaux Principal', value: data.material || 'Chêne massif & Aluminium' },
-                    { label: 'Garantie', value: '2 ans constructeur' },
-                    { label: 'Origine', value: 'Fabriqué en France' }
-                ];
-            }
             renderSpecsBuilderRows(specsArray);
 
             let vendorsArray = [];
@@ -815,13 +718,6 @@ CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authentica
                 try {
                     vendorsArray = typeof data.vendors === 'string' ? JSON.parse(data.vendors) : data.vendors;
                 } catch(e) {}
-            }
-            if (!Array.isArray(vendorsArray) || vendorsArray.length === 0) {
-                vendorsArray = [];
-                if (data.vendor_amazon) vendorsArray.push({ name: 'Amazon', price: data.price || '', url: data.vendor_amazon });
-                if (data.vendor_wayfair) vendorsArray.push({ name: 'Wayfair', price: data.price || '', url: data.vendor_wayfair });
-                if (data.vendor_ikea) vendorsArray.push({ name: 'IKEA', price: data.price || '', url: data.vendor_ikea });
-                if (vendorsArray.length === 0) vendorsArray = defaultVendorsPreset;
             }
             renderVendorsBuilderRows(vendorsArray);
 
@@ -854,7 +750,7 @@ CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authentica
 
             const { error } = await supabaseClient.from('products').delete().eq('id', id);
             if (error) {
-                showToast("Erreur de suppression: " + error.message, true);
+                showToast("Erreur de suppression : " + error.message, true);
             } else {
                 showToast("Produit supprimé du catalogue !");
                 loadAdminProducts();
@@ -915,7 +811,6 @@ CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authentica
             const weightItem = techSpecsArray.find(s => s.label.toLowerCase().includes('poids') || s.label.toLowerCase().includes('weight')) || techSpecsArray[1];
             const matItem = techSpecsArray.find(s => s.label.toLowerCase().includes('matér') || s.label.toLowerCase().includes('mater')) || techSpecsArray[2];
 
-            /* IMPORTANT: Transmettre les tableaux d'objets directement pour les colonnes JSONB Supabase */
             const payload = {
                 name: document.getElementById('form-name').value.trim(),
                 ean: document.getElementById('form-ean').value.trim() || null,
@@ -944,8 +839,8 @@ CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authentica
             }
 
             if (res.error) {
-                console.error("Erreur Supabase lors de l'insertion:", res.error);
-                showToast(`Erreur Supabase: ${res.error.message}. Exécutez le script SQL via le bouton en haut si le problème persiste.`, true);
+                console.error("Erreur Supabase:", res.error);
+                showToast(`Erreur d'enregistrement : ${res.error.message} (Code : ${res.error.code || 'Inconnu'}). Suivez le guide de configuration Supabase ci-dessous.`, true);
             } else {
                 showToast(productId ? "Produit mis à jour avec succès !" : "Nouveau produit ajouté au catalogue !");
                 resetForm();
