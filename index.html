@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOOKS - 3D Studio & Product Visualizer</title>
+    <title>LOOKS - 3D Studio & Dynamic Product Visualizer</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -110,7 +110,6 @@
         <!-- CLIENT NAVIGATION TUTORIAL HINTS -->
         <div id="header-client-hints" class="hidden lg:flex items-center gap-6 pointer-events-auto text-slate-500 dark:text-slate-400 text-xs font-light tracking-wider">
             
-            <!-- Rotation Hint (Clic Gauche) -->
             <div id="hint-rotate" class="flex items-center gap-2 hover:text-slate-800 dark:hover:text-slate-200 transition px-2 py-1 rounded-lg">
                 <svg class="w-5 h-5 shrink-0 text-slate-700 dark:text-slate-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="6" y="3" width="12" height="18" rx="6" stroke="currentColor" stroke-width="1.5"/>
@@ -121,7 +120,6 @@
                 <span><strong class="font-medium text-slate-800 dark:text-slate-200">clic gauche</strong> : rotation</span>
             </div>
 
-            <!-- Move Hint (Clic Droit) -->
             <div id="hint-pan" class="flex items-center gap-2 hover:text-slate-800 dark:hover:text-slate-200 transition px-2 py-1 rounded-lg">
                 <svg class="w-5 h-5 shrink-0 text-slate-700 dark:text-slate-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="6" y="3" width="12" height="18" rx="6" stroke="currentColor" stroke-width="1.5"/>
@@ -132,7 +130,6 @@
                 <span><strong class="font-medium text-slate-800 dark:text-slate-200">clic droit</strong> : déplacement</span>
             </div>
 
-            <!-- Zoom Hint (Molette) -->
             <div id="hint-zoom" class="flex items-center gap-2 hover:text-slate-800 dark:hover:text-slate-200 transition px-2 py-1 rounded-lg">
                 <svg class="w-5 h-5 shrink-0 text-slate-700 dark:text-slate-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="6" y="3" width="12" height="18" rx="6" stroke="currentColor" stroke-width="1.5"/>
@@ -143,7 +140,6 @@
                 <span><strong class="font-medium text-slate-800 dark:text-slate-200">molette</strong> : zoom</span>
             </div>
 
-            <!-- Button replay tutorial -->
             <button id="btn-replay-guide" title="Revoir l'animation guide de navigation" class="ml-2 px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 hover:border-red-500 hover:text-red-500 transition text-[11px] flex items-center gap-1.5">
                 <i class="fa-solid fa-play text-[10px]"></i>
                 <span>Guide</span>
@@ -152,27 +148,22 @@
 
         <!-- RIGHT HEADER CONTROLS -->
         <div class="pointer-events-auto flex items-center gap-2.5">
-            
-            <!-- Dark / Light Studio Toggle -->
             <button id="btn-theme-toggle" title="Changer le mode d'éclairage du studio" 
                 class="w-9 h-9 rounded-xl flex items-center justify-center bg-white/60 dark:bg-slate-800/60 border border-slate-300/80 dark:border-slate-700 shadow-sm text-slate-700 dark:text-slate-200 hover:scale-105 transition">
                 <i class="fa-solid fa-sun dark:hidden text-amber-500 text-sm"></i>
                 <i class="fa-solid fa-moon hidden dark:block text-indigo-400 text-sm"></i>
             </button>
 
-            <!-- Product Description Info Button -->
             <button id="btn-open-desc-tab" title="Fiche & Description Produit" 
                 class="w-9 h-9 rounded-xl flex items-center justify-center bg-red-600/10 dark:bg-red-500/20 border border-red-500/40 shadow-sm text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition transform hover:scale-105">
                 <i class="fa-solid fa-circle-info text-sm"></i>
             </button>
 
-            <!-- Zoom Percentage Badge -->
             <span id="zoom-badge" class="px-2.5 py-1 text-xs font-mono rounded-xl bg-white/60 dark:bg-slate-800/60 border border-slate-300/80 dark:border-slate-700 text-slate-700 dark:text-slate-200">100%</span>
         </div>
     </header>
 
     <main id="view-client" class="relative w-full h-full overflow-hidden flex-1">
-        <!-- Canvas for Three.js 3D Rendering -->
         <canvas id="webgl-canvas" class="w-full h-full block touch-none outline-none"></canvas>
 
         <!-- Guide Overlay Banner -->
@@ -186,7 +177,6 @@
             </div>
         </div>
 
-        <!-- Drawer Floating Toggle Button -->
         <button id="btn-open-drawer" title="Ouvrir la fiche produit" class="absolute top-24 right-6 z-20 w-10 h-10 rounded-2xl glass-ui flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition shadow-lg">
             <i id="drawer-chevron-icon" class="fa-solid fa-chevron-left text-sm"></i>
         </button>
@@ -205,8 +195,6 @@
 
         <!-- Bottom Client UI Overlay -->
         <div class="absolute bottom-10 left-8 right-8 z-10 flex items-end justify-between pointer-events-none">
-            
-            <!-- Bottom Left Title & Description -->
             <div class="pointer-events-auto max-w-lg">
                 <h1 id="product-title" class="text-xl sm:text-2xl md:text-3xl font-light uppercase tracking-tight text-slate-950 dark:text-white leading-snug">
                     CHAISE ERGONOMIQUE STUDIO
@@ -216,7 +204,6 @@
                 </p>
             </div>
 
-            <!-- Bottom Right Red CTA Button -->
             <button id="btn-availability" class="pointer-events-auto px-4 py-2.5 rounded-full bg-red-600 hover:bg-red-500 active:scale-95 text-white font-light text-xs sm:text-sm tracking-wide shadow-lg shadow-red-600/30 flex items-center gap-2.5 transition-all duration-200 hover:shadow-red-600/50">
                 <span>Acheter ce produit au meilleur prix</span>
                 <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
@@ -226,9 +213,10 @@
         </div>
     </main>
 
-    <aside id="drawer-panel" class="fixed top-0 right-0 bottom-0 w-80 sm:w-96 glass-ui z-40 drawer-transition transform translate-x-full shadow-2xl flex flex-col">
+    <!-- DRAWER SIDE PANEL (Fiche & Description) -->
+    <aside id="drawer-panel" class="fixed top-0 right-0 bottom-0 w-80 sm:w-[420px] glass-ui z-40 drawer-transition transform translate-x-full shadow-2xl flex flex-col">
         
-        <div class="p-6 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between pb-4">
+        <div class="p-6 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between pb-4 shrink-0">
             <div>
                 <h2 class="text-base font-normal uppercase tracking-wider text-slate-900 dark:text-white">Fiche & Description</h2>
             </div>
@@ -239,47 +227,28 @@
 
         <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 text-xs">
             
-            <!-- Description -->
+            <!-- Description "À propos" Section -->
             <div class="space-y-2">
-                <label class="font-normal uppercase tracking-wider text-slate-800 dark:text-slate-200 block text-[11px] flex items-center gap-1.5">
+                <label id="label-about-title" class="font-normal uppercase tracking-wider text-slate-800 dark:text-slate-200 block text-[11px] flex items-center gap-1.5">
                     <i class="fa-solid fa-align-left text-red-500"></i> À propos du produit
                 </label>
-                <p id="desc-full-text" class="text-slate-600 dark:text-slate-300 font-light leading-relaxed text-xs">
+                <div id="desc-full-text" class="text-slate-600 dark:text-slate-300 font-light leading-relaxed text-xs space-y-2">
                     Conçue pour un confort optimal et une esthétique épurée, cette pièce allie l'ergonomie moderne à des matériaux haut de gamme.
-                </p>
-            </div>
-
-            <!-- Technical Specifications Table -->
-            <div class="space-y-2">
-                <label class="font-normal uppercase tracking-wider text-slate-800 dark:text-slate-200 block text-[11px] flex items-center gap-1.5">
-                    <i class="fa-solid fa-list-check text-red-500"></i> Fiche Technique
-                </label>
-                
-                <div class="divide-y divide-slate-200 dark:divide-slate-800 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden font-light">
-                    <div class="flex justify-between p-3">
-                        <span class="text-slate-500 dark:text-slate-400">Dimensions</span>
-                        <span id="spec-dimensions" class="text-slate-900 dark:text-slate-100 font-medium">65 x 60 x 85 cm</span>
-                    </div>
-                    <div class="flex justify-between p-3">
-                        <span class="text-slate-500 dark:text-slate-400">Poids Net</span>
-                        <span id="spec-weight" class="text-slate-900 dark:text-slate-100 font-medium">8.5 kg</span>
-                    </div>
-                    <div class="flex justify-between p-3">
-                        <span class="text-slate-500 dark:text-slate-400">Matériaux Principal</span>
-                        <span id="spec-material" class="text-slate-900 dark:text-slate-100 font-medium">Chêne massif & Aluminium</span>
-                    </div>
-                    <div class="flex justify-between p-3">
-                        <span class="text-slate-500 dark:text-slate-400">Garantie</span>
-                        <span id="spec-warranty" class="text-slate-900 dark:text-slate-100 font-medium">2 ans constructeur</span>
-                    </div>
-                    <div class="flex justify-between p-3">
-                        <span class="text-slate-500 dark:text-slate-400">Origine</span>
-                        <span id="spec-origin" class="text-slate-900 dark:text-slate-100 font-medium">Fabriqué en France</span>
-                    </div>
                 </div>
             </div>
 
-            <!-- Redirection CTA -->
+            <!-- Technical Specifications Table (Dynamic Columns Layout) -->
+            <div class="space-y-2">
+                <label id="label-specs-title" class="font-normal uppercase tracking-wider text-slate-800 dark:text-slate-200 block text-[11px] flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-check text-red-500"></i> Fiche Technique
+                </label>
+                
+                <!-- Dynamic Spec Container rendered by JavaScript -->
+                <div id="dynamic-specs-container">
+                    <!-- Dynamic Grid or List Items -->
+                </div>
+            </div>
+
             <button onclick="document.getElementById('btn-availability').click()" class="w-full py-3.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-light text-xs uppercase tracking-wider shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 transition">
                 <i class="fa-solid fa-bag-shopping"></i>
                 <span>Acheter ce produit au meilleur prix</span>
@@ -287,6 +256,7 @@
         </div>
     </aside>
 
+    <!-- Availability Modal with Dynamic Vendors -->
     <div id="availability-modal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="glass-ui max-w-md w-full rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 transform scale-95 transition-transform duration-300" id="modal-card">
             
@@ -305,61 +275,15 @@
                     Acheter chez un vendeur partenaire
                 </span>
                 
-                <!-- Amazon -->
-                <a id="link-vendor-amazon" href="https://www.amazon.com" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 dark:bg-slate-900/80 dark:hover:bg-slate-800 transition border border-slate-200/80 dark:border-slate-800 group">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-base shrink-0">
-                            <i class="fa-brands fa-amazon"></i>
-                        </div>
-                        <div>
-                            <div class="text-xs font-semibold text-slate-900 dark:text-white">Amazon</div>
-                            <span class="text-[10px] font-light text-slate-500 dark:text-slate-400">Europe & International</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span id="amazon-price" class="text-xs font-semibold text-slate-900 dark:text-white">299,00 €</span>
-                        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-red-500 transition"></i>
-                    </div>
-                </a>
-
-                <!-- Wayfair -->
-                <a id="link-vendor-wayfair" href="https://www.wayfair.com" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 dark:bg-slate-900/80 dark:hover:bg-slate-800 transition border border-slate-200/80 dark:border-slate-800 group">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-base shrink-0">
-                            <i class="fa-solid fa-store"></i>
-                        </div>
-                        <div>
-                            <div class="text-xs font-semibold text-slate-900 dark:text-white">Wayfair</div>
-                            <span class="text-[10px] font-light text-slate-500 dark:text-slate-400">Ameublement & Déco</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span id="wayfair-price" class="text-xs font-semibold text-slate-900 dark:text-white">309,00 €</span>
-                        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-red-500 transition"></i>
-                    </div>
-                </a>
-
-                <!-- IKEA -->
-                <a id="link-vendor-ikea" href="https://www.ikea.com" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 dark:bg-slate-900/80 dark:hover:bg-slate-800 transition border border-slate-200/80 dark:border-slate-800 group">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-base shrink-0">
-                            <i class="fa-solid fa-couch"></i>
-                        </div>
-                        <div>
-                            <div class="text-xs font-semibold text-slate-900 dark:text-white">IKEA</div>
-                            <span class="text-[10px] font-light text-slate-500 dark:text-slate-400">Boutiques & Livraisons</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span id="ikea-price" class="text-xs font-semibold text-slate-900 dark:text-white">289,00 €</span>
-                        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-red-500 transition"></i>
-                    </div>
-                </a>
+                <!-- Dynamic Vendors Container -->
+                <div id="modal-vendors-container" class="space-y-2.5 max-h-[320px] overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Dynamic Vendors rendered via JS -->
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification Container -->
+    <!-- Toast Container -->
     <div id="toast-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
     <script>
@@ -370,14 +294,12 @@
         let baseLightIntensities = { ambient: 1.2, main: 1.8, fill: 1.0, hemi: 0.8 };
         let initialCameraDistance = 9.486;
 
-        // Navigation Guide Animation State
         let isGuideAnimating = false;
         let guideStartTime = 0;
         const GUIDE_TOTAL_DURATION = 6500;
         const defaultPos = new THREE.Vector3(5, 4, 7);
         const defaultTarget = new THREE.Vector3(0, 0.8, 0);
 
-        // Supabase & Active Product State
         let supabaseClient = null;
         let activeProduct = null;
 
@@ -389,10 +311,7 @@
             toast.innerHTML = `<i class="fa-solid ${isError ? 'fa-circle-exclamation text-red-500' : 'fa-circle-check text-emerald-400'}"></i><span>${message}</span>`;
             container.appendChild(toast);
 
-            requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            });
-
+            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
             setTimeout(() => {
                 toast.classList.add('translate-y-2', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
@@ -621,17 +540,126 @@
                 name: "Chaise Ergonomique Studio",
                 subtitle: "Collection Studio • Modèle 3D Haute Définition",
                 price: "249,00 €",
+                about_title: "À propos du produit",
                 description: "Conçue pour un confort optimal et une esthétique épurée, cette pièce allie l'ergonomie moderne à des matériaux haut de gamme.",
-                dimensions: "65 x 60 x 85 cm",
-                weight: "8.5 kg",
-                material: "Bois massif & Acier époxy",
-                warranty: "2 ans constructeur",
-                origin: "Fabriqué en France",
-                vendor_amazon: "https://www.amazon.com",
-                vendor_wayfair: "https://www.wayfair.com",
-                vendor_ikea: "https://www.ikea.com",
+                specs_title: "Fiche Technique",
+                specs_columns: 1,
+                tech_specs: [
+                    { label: 'Dimensions', value: '65 x 60 x 85 cm' },
+                    { label: 'Poids Net', value: '8.5 kg' },
+                    { label: 'Matériaux Principal', value: 'Bois massif & Acier époxy' },
+                    { label: 'Garantie', value: '2 ans constructeur' },
+                    { label: 'Origine', value: 'Fabriqué en France' }
+                ],
+                vendors: [
+                    { name: 'Amazon', price: '249,00 €', url: 'https://www.amazon.com' },
+                    { name: 'Wayfair', price: '259,00 €', url: 'https://www.wayfair.com' },
+                    { name: 'IKEA', price: '239,00 €', url: 'https://www.ikea.com' }
+                ],
                 model_url: null
             });
+        }
+
+        function renderDynamicSpecsUI(specsArray, columns) {
+            const container = document.getElementById('dynamic-specs-container');
+            if (!container) return;
+
+            const cols = parseInt(columns, 10) || 1;
+            const items = (Array.isArray(specsArray) && specsArray.length > 0) ? specsArray : [];
+
+            if (items.length === 0) {
+                container.innerHTML = `<div class="p-3 text-slate-400 font-light text-center">Aucune caractéristique disponible.</div>`;
+                return;
+            }
+
+            if (cols === 1) {
+                container.innerHTML = `
+                    <div class="divide-y divide-slate-200 dark:divide-slate-800 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden font-light">
+                        ${items.map(item => `
+                            <div class="flex justify-between items-center p-3">
+                                <span class="text-slate-500 dark:text-slate-400 font-medium text-[11px]">${item.label || 'Critère'}</span>
+                                <span class="text-slate-900 dark:text-slate-100 font-normal text-right">${item.value || '-'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (cols === 2) {
+                container.innerHTML = `
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 font-light">
+                        ${items.map(item => `
+                            <div class="p-3 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between space-y-1">
+                                <span class="text-[10px] uppercase font-semibold tracking-wider text-slate-400 dark:text-slate-500">${item.label || 'Critère'}</span>
+                                <span class="text-slate-900 dark:text-slate-100 font-normal text-xs leading-snug">${item.value || '-'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 font-light">
+                        ${items.map(item => `
+                            <div class="p-2.5 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 text-center flex flex-col justify-center space-y-1">
+                                <span class="text-[9px] uppercase font-semibold text-slate-400 truncate">${item.label || 'Critère'}</span>
+                                <span class="text-slate-900 dark:text-slate-100 font-medium text-[11px] leading-tight truncate" title="${item.value}">${item.value || '-'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        /* DYNAMIC VENDORS MODAL RENDERING */
+        function getVendorIconInfo(name) {
+            const lower = (name || '').toLowerCase();
+            if (lower.includes('amazon')) return { icon: 'fa-brands fa-amazon', bg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400', tag: 'Europe & International' };
+            if (lower.includes('wayfair')) return { icon: 'fa-solid fa-store', bg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400', tag: 'Ameublement & Déco' };
+            if (lower.includes('ikea')) return { icon: 'fa-solid fa-couch', bg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', tag: 'Boutiques & Livraisons' };
+            if (lower.includes('fnac') || lower.includes('darty')) return { icon: 'fa-solid fa-bolt', bg: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400', tag: 'High-Tech & Maison' };
+            if (lower.includes('cdiscount')) return { icon: 'fa-solid fa-tag', bg: 'bg-red-500/10 text-red-600 dark:text-red-400', tag: 'E-Commerce' };
+            if (lower.includes('ebay')) return { icon: 'fa-brands fa-ebay', bg: 'bg-blue-600/10 text-blue-600 dark:text-blue-400', tag: 'Marketplace' };
+            if (lower.includes('boulanger')) return { icon: 'fa-solid fa-plug', bg: 'bg-orange-500/10 text-orange-600 dark:text-orange-400', tag: 'Électroménager & Tech' };
+            if (lower.includes('maison')) return { icon: 'fa-solid fa-house', bg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', tag: 'Décoration & Mobilier' };
+            return { icon: 'fa-solid fa-bag-shopping', bg: 'bg-red-500/10 text-red-600 dark:text-red-400', tag: 'Vendeur Partenaire' };
+        }
+
+        function renderVendorsModalUI(vendorsArray, productPrice) {
+            const container = document.getElementById('modal-vendors-container');
+            if (!container) return;
+
+            const list = (Array.isArray(vendorsArray) && vendorsArray.length > 0) ? vendorsArray : [];
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900 text-center text-xs text-slate-500 dark:text-slate-400">
+                        Aucun vendeur n'a encore été configuré pour ce produit.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = list.map(v => {
+                const info = getVendorIconInfo(v.name);
+                const priceDisplay = v.price || productPrice || 'Voir le prix';
+                const url = v.url || '#';
+
+                return `
+                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 dark:bg-slate-900/80 dark:hover:bg-slate-800 transition border border-slate-200/80 dark:border-slate-800 group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl ${info.bg} flex items-center justify-center text-base shrink-0">
+                                <i class="${info.icon}"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold text-slate-900 dark:text-white">${v.name || 'Vendeur'}</div>
+                                <span class="text-[10px] font-light text-slate-500 dark:text-slate-400">${info.tag}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold text-slate-900 dark:text-white">${priceDisplay}</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-red-500 transition"></i>
+                        </div>
+                    </a>
+                `;
+            }).join('');
         }
 
         function applyProductToUI(prod) {
@@ -642,20 +670,56 @@
             document.getElementById('modal-product-name').textContent = (prod.name || '').toUpperCase();
             document.getElementById('modal-product-price').textContent = prod.price || '299,00 €';
             
-            document.getElementById('desc-full-text').textContent = prod.description || 'Aucune description disponible.';
-            document.getElementById('spec-dimensions').textContent = prod.dimensions || 'N/A';
-            document.getElementById('spec-weight').textContent = prod.weight || 'N/A';
-            document.getElementById('spec-material').textContent = prod.material || 'N/A';
-            document.getElementById('spec-warranty').textContent = prod.warranty || 'N/A';
-            document.getElementById('spec-origin').textContent = prod.origin || 'N/A';
+            // Custom Titles
+            const labelAbout = document.getElementById('label-about-title');
+            if (labelAbout) {
+                labelAbout.innerHTML = `<i class="fa-solid fa-align-left text-red-500"></i> ${prod.about_title || 'À propos du produit'}`;
+            }
 
-            document.getElementById('link-vendor-amazon').href = prod.vendor_amazon || '#';
-            document.getElementById('link-vendor-wayfair').href = prod.vendor_wayfair || '#';
-            document.getElementById('link-vendor-ikea').href = prod.vendor_ikea || '#';
+            const labelSpecs = document.getElementById('label-specs-title');
+            if (labelSpecs) {
+                labelSpecs.innerHTML = `<i class="fa-solid fa-list-check text-red-500"></i> ${prod.specs_title || 'Fiche Technique'}`;
+            }
 
-            document.getElementById('amazon-price').textContent = prod.price || '299,00 €';
-            document.getElementById('wayfair-price').textContent = prod.price || '299,00 €';
-            document.getElementById('ikea-price').textContent = prod.price || '299,00 €';
+            // Description Body
+            const descEl = document.getElementById('desc-full-text');
+            if (descEl) {
+                const descText = prod.description || 'Aucune description disponible.';
+                descEl.innerHTML = descText.split('\n').map(p => `<p>${p}</p>`).join('');
+            }
+
+            // Parse Specs Array
+            let specsArray = [];
+            if (prod.tech_specs) {
+                try {
+                    specsArray = typeof prod.tech_specs === 'string' ? JSON.parse(prod.tech_specs) : prod.tech_specs;
+                } catch(e) {}
+            }
+            if (!Array.isArray(specsArray) || specsArray.length === 0) {
+                specsArray = [
+                    { label: 'Dimensions', value: prod.dimensions || '65 x 60 x 85 cm' },
+                    { label: 'Poids Net', value: prod.weight || '8.5 kg' },
+                    { label: 'Matériaux Principal', value: prod.material || 'Chêne massif & Aluminium' },
+                    { label: 'Garantie', value: prod.warranty || '2 ans constructeur' },
+                    { label: 'Origine', value: prod.origin || 'Fabriqué en France' }
+                ];
+            }
+            renderDynamicSpecsUI(specsArray, prod.specs_columns || 1);
+
+            // Parse Vendors Array
+            let vendorsArray = [];
+            if (prod.vendors) {
+                try {
+                    vendorsArray = typeof prod.vendors === 'string' ? JSON.parse(prod.vendors) : prod.vendors;
+                } catch(e) {}
+            }
+            if (!Array.isArray(vendorsArray) || vendorsArray.length === 0) {
+                vendorsArray = [];
+                if (prod.vendor_amazon) vendorsArray.push({ name: 'Amazon', price: prod.price || '299,00 €', url: prod.vendor_amazon });
+                if (prod.vendor_wayfair) vendorsArray.push({ name: 'Wayfair', price: prod.price || '309,00 €', url: prod.vendor_wayfair });
+                if (prod.vendor_ikea) vendorsArray.push({ name: 'IKEA', price: prod.price || '289,00 €', url: prod.vendor_ikea });
+            }
+            renderVendorsModalUI(vendorsArray, prod.price);
 
             if (prod.model_url) {
                 load3DModelFromURL(prod.model_url);
