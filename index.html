@@ -34,10 +34,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
 
-    <!-- Three.js and Loaders -->
+    <!-- Three.js, Loaders & Draco Decoder -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
 
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -302,7 +303,7 @@
             const container = document.getElementById('toast-container');
             if (!container) return;
             const toast = document.createElement('div');
-            toast.className = `px-4 py-2.5 rounded-xl ${isError ? 'bg-red-950/90 border-red-700' : 'bg-slate-900/90 border-slate-700/50'} text-white text-xs font-light shadow-xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 border`;
+            toast.className = `px-4 py-2.5 rounded-xl ${isError ? 'bg-red-950/90 border-red-700' : 'bg-slate-900/90 border-slate-700/50'} text-white text-xs font-light shadow-xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 border max-w-md text-center`;
             toast.innerHTML = `<i class="fa-solid ${isError ? 'fa-circle-exclamation text-red-500' : 'fa-circle-check text-emerald-400'}"></i><span>${message}</span>`;
             container.appendChild(toast);
 
@@ -310,7 +311,7 @@
             setTimeout(() => {
                 toast.classList.add('translate-y-2', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            }, 6000);
         }
 
         function updateZoomBadge() {
@@ -462,21 +463,27 @@
             if (currentModel) scene.remove(currentModel);
 
             const loader = new THREE.GLTFLoader();
+
+            // Support de la compression Draco (fichiers .glb optimisés)
+            const dracoLoader = new THREE.DRACOLoader();
+            dracoLoader.setDecoderPath('https://www.gstatic.com/draco/gltf_decoder/');
+            loader.setDRACOLoader(dracoLoader);
+
             loader.load(url, (gltf) => {
                 currentModel = gltf.scene;
                 fitModelToStage(currentModel);
                 scene.add(currentModel);
                 hideLoading();
             }, (xhr) => {
-                if (xhr.lengthComputable) {
+                if (xhr.lengthComputable && xhr.total > 0) {
                     const pct = Math.round((xhr.loaded / xhr.total) * 100);
                     const bar = document.getElementById('loading-bar');
                     if (bar) bar.style.width = pct + '%';
                 }
             }, (error) => {
-                console.error("Erreur de chargement du modèle:", error);
+                console.error("Erreur détaillée de chargement du modèle:", error);
                 hideLoading();
-                showToast("Fichier 3D non accessible, affichage du modèle par défaut.", true);
+                showToast("Fichier 3D non accessible (Problème CORS ou URL invalide). Modèle de démonstration affiché.", true);
                 loadDefault3DChair();
             });
         }
@@ -716,9 +723,9 @@
                 </a>
             `).join('');
 
-            // Chargement modèle 3D
-            if (product.model_url && product.model_url.startsWith('http')) {
-                load3DModel(product.model_url);
+            // Chargement modèle 3D (Supporte les URLs HTTP(S) ainsi que les chemins locaux/relatifs)
+            if (product.model_url && product.model_url.trim().length > 0) {
+                load3DModel(product.model_url.trim());
             } else {
                 loadDefault3DChair();
             }
