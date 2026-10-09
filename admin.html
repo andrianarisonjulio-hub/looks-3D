@@ -195,8 +195,14 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">URL Modèle 3D (.glb) *</label>
-                    <input type="url" id="form-model-url" placeholder="https://pub-xxx.r2.dev/3d-models/chaise.glb" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono transition-colors" required>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] font-medium">URL ou Chemin Modèle 3D (.glb / .gltf) *</label>
+                        <button type="button" onclick="testModelUrl()" class="text-[10px] text-indigo-500 hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-vial"></i> Tester l'accessibilité
+                        </button>
+                    </div>
+                    <input type="text" id="form-model-url" placeholder="https://votre-bucket.supabase.co/storage/v1/object/public/models/chaise.glb" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono transition-colors" required>
+                    <p class="text-[10px] text-slate-400 mt-1">Format recommandé: Direct HTTPS vers un fichier <strong>.glb</strong> (Bucket Supabase Public ou serveur compatible CORS).</p>
                 </div>
 
                 <div>
@@ -503,6 +509,26 @@ NOTIFY pgrst, 'reload schema';`;
             toast.classList.add('translate-y-2', 'opacity-0');
             setTimeout(() => toast.remove(), 300);
         }, isError ? 8000 : 3000);
+    }
+
+    async function testModelUrl() {
+        const url = document.getElementById('form-model-url').value.trim();
+        if (!url) {
+            showToast("Veuillez saisir une URL de modèle à tester.", true);
+            return;
+        }
+
+        showToast("Test d'accès au fichier 3D en cours...");
+        try {
+            const res = await fetch(url, { method: 'HEAD' });
+            if (res.ok) {
+                showToast("✅ Le fichier 3D est accessible et prêt pour l'affichage !");
+            } else {
+                showToast(`⚠️ Le serveur a répondu avec le statut ${res.status}. Vérifiez les droits de votre fichier/bucket.`, true);
+            }
+        } catch (e) {
+            showToast("❌ Impossible de télécharger le fichier. Vérifiez l'URL et les en-têtes CORS de votre serveur de stockage.", true);
+        }
     }
 
     function setSpecsColumns(cols) {
