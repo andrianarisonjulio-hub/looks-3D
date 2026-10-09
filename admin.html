@@ -80,7 +80,7 @@
 
 <body class="h-full flex flex-col antialiased relative selection:bg-red-500 selection:text-white overflow-hidden bg-slate-100 text-slate-800 dark:bg-[#0f0f11] dark:text-slate-100 transition-colors duration-300">
 
-    <!-- LOGIN SCREEN OVERLAY (Si non connecté) -->
+    <!-- LOGIN SCREEN OVERLAY -->
     <div id="auth-screen" class="absolute inset-0 z-50 bg-slate-100 dark:bg-[#0f0f11] flex items-center justify-center p-4 transition-colors duration-300">
         
         <button onclick="toggleTheme()" class="theme-toggle-btn absolute top-6 right-6 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-2 text-xs shadow-sm" title="Changer le mode d'affichage">
@@ -144,6 +144,11 @@
                 </div>
                 
                 <div class="flex items-center gap-2.5 flex-wrap">
+                    <button onclick="openSqlModal()" class="px-3.5 py-2.5 rounded-xl bg-indigo-600/10 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-500/30 text-xs font-medium transition flex items-center gap-2 shadow-sm" title="Script SQL Supabase">
+                        <i class="fa-solid fa-database"></i>
+                        <span>Configuration Supabase</span>
+                    </button>
+
                     <button onclick="toggleTheme()" class="theme-toggle-btn px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-medium transition flex items-center gap-2 shadow-sm" title="Changer le mode d'affichage">
                         <i class="theme-toggle-icon fa-solid fa-moon text-indigo-600 dark:text-amber-400"></i>
                         <span class="theme-toggle-text hidden sm:inline">Mode Sombre</span>
@@ -167,7 +172,7 @@
                     <h2 id="form-title" class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                         <i class="fa-solid fa-plus text-red-500"></i> Ajouter un Nouveau Produit 3D
                     </h2>
-                    <button id="btn-reset-form" class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-500 underline hidden">
+                    <button id="btn-reset-form" type="button" class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-500 underline hidden">
                         Annuler la modification
                     </button>
                 </div>
@@ -294,7 +299,7 @@
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                         <i class="fa-solid fa-cubes text-red-500"></i> Catalogue Actuel dans Supabase
                     </h3>
-                    <button id="btn-refresh-list" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 transition">
+                    <button id="btn-refresh-list" type="button" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 transition">
                         <i class="fa-solid fa-rotate-right"></i> Actualiser
                     </button>
                 </div>
@@ -324,7 +329,7 @@
         </div>
     </main>
 
-    <!-- CUSTOM CONFIRM DELETE MODAL -->
+    <!-- CONFIRM DELETE MODAL -->
     <div id="confirm-delete-modal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="glass-ui max-w-sm w-full rounded-3xl p-6 shadow-2xl space-y-4 text-center transform scale-95 transition-transform duration-300" id="delete-modal-card">
             <div class="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center text-xl mx-auto shadow-md">
@@ -345,6 +350,30 @@
         </div>
     </div>
 
+    <!-- SQL SETUP HELPER MODAL -->
+    <div id="sql-modal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-ui max-w-2xl w-full rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 transform scale-95 transition-transform duration-300" id="sql-modal-card">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2 text-indigo-500 font-bold text-sm uppercase">
+                    <i class="fa-solid fa-database"></i> Script SQL Supabase
+                </div>
+                <button type="button" onclick="closeSqlModal()" class="w-8 h-8 rounded-full bg-slate-200/80 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-red-500 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Si l'ajout échoue, il est probable que votre table <code class="font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-red-500">products</code> n'ait pas toutes les colonnes ou que les règles RLS bloquent l'insertion. Exécutez ce script dans l'éditeur SQL de Supabase :
+            </p>
+            <pre id="sql-code-block" class="bg-slate-900 text-slate-200 p-4 rounded-2xl text-[11px] font-mono overflow-x-auto max-h-60 custom-scrollbar border border-slate-800 select-all"></pre>
+            <div class="flex justify-between items-center pt-2">
+                <span class="text-[10px] text-slate-400">Cliquez sur Copier puis collez dans Supabase > SQL Editor > Run</span>
+                <button type="button" onclick="copySqlCode()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-copy"></i> Copier le SQL
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST NOTIFICATIONS -->
     <div id="toast-container" class="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
@@ -352,6 +381,37 @@
         let supabaseClient = null;
         let currentSelectedColumns = 1;
         let activeDeleteId = null;
+
+        const SQL_SCHEMA_SCRIPT = `CREATE TABLE IF NOT EXISTS public.products (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    name TEXT NOT NULL,
+    ean TEXT,
+    price TEXT NOT NULL,
+    model_url TEXT NOT NULL,
+    subtitle TEXT,
+    about_title TEXT,
+    description TEXT,
+    specs_title TEXT,
+    specs_columns INT DEFAULT 1,
+    tech_specs JSONB,
+    vendors JSONB,
+    dimensions TEXT,
+    weight TEXT,
+    material TEXT,
+    vendor_amazon TEXT,
+    vendor_wayfair TEXT,
+    vendor_ikea TEXT
+);
+
+-- Active RLS et autorise la lecture/écriture
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public Select" ON public.products;
+CREATE POLICY "Public Select" ON public.products FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Auth All" ON public.products;
+CREATE POLICY "Auth All" ON public.products FOR ALL USING (auth.role() = 'authenticated');`;
 
         /* Default Specification & Vendors Presets */
         const defaultSpecsPreset = [
@@ -404,20 +464,20 @@
             });
         }
 
-        /* TOAST NOTIFICATIONS */
+        /* TOAST NOTIFICATIONS AVEC MESSAGES D'ERREURS DÉTAILLÉS */
         function showToast(message, isError = false) {
             const container = document.getElementById('toast-container');
             if (!container) return;
             const toast = document.createElement('div');
-            toast.className = `px-4 py-2.5 rounded-xl ${isError ? 'bg-red-950/90 text-red-200 border-red-700' : 'bg-white/95 dark:bg-slate-900/90 text-slate-800 dark:text-white border-slate-200 dark:border-slate-700/50'} text-xs font-medium shadow-2xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 border`;
-            toast.innerHTML = `<i class="fa-solid ${isError ? 'fa-circle-exclamation text-red-500' : 'fa-circle-check text-emerald-500'}"></i><span>${message}</span>`;
+            toast.className = `px-4 py-3 rounded-xl max-w-md ${isError ? 'bg-red-950/95 text-red-200 border-red-700' : 'bg-white/95 dark:bg-slate-900/90 text-slate-800 dark:text-white border-slate-200 dark:border-slate-700/50'} text-xs font-medium shadow-2xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 flex items-start gap-2.5 border`;
+            toast.innerHTML = `<i class="fa-solid ${isError ? 'fa-circle-exclamation text-red-500 text-sm mt-0.5' : 'fa-circle-check text-emerald-500 text-sm mt-0.5'}"></i><div class="flex-1">${message}</div>`;
             container.appendChild(toast);
 
             requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
             setTimeout(() => {
                 toast.classList.add('translate-y-2', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            }, isError ? 6000 : 3000);
         }
 
         function setSpecsColumns(cols) {
@@ -434,7 +494,7 @@
             });
         }
 
-        /* DYNAMIC SPECS BUILDER */
+        /* SPECS BUILDER */
         function renderSpecsBuilderRows(specsList) {
             const container = document.getElementById('specs-builder-container');
             if (!container) return;
@@ -501,7 +561,7 @@
             renderSpecsBuilderRows(current);
         }
 
-        /* DYNAMIC VENDORS BUILDER */
+        /* VENDORS BUILDER */
         function renderVendorsBuilderRows(vendorsList) {
             const container = document.getElementById('vendors-builder-container');
             if (!container) return;
@@ -581,6 +641,26 @@
             current[index] = current[target];
             current[target] = temp;
             renderVendorsBuilderRows(current);
+        }
+
+        function openSqlModal() {
+            const modal = document.getElementById('sql-modal');
+            const card = document.getElementById('sql-modal-card');
+            document.getElementById('sql-code-block').textContent = SQL_SCHEMA_SCRIPT;
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-95');
+        }
+
+        function closeSqlModal() {
+            const modal = document.getElementById('sql-modal');
+            const card = document.getElementById('sql-modal-card');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            card.classList.add('scale-95');
+        }
+
+        function copySqlCode() {
+            navigator.clipboard.writeText(SQL_SCHEMA_SCRIPT);
+            showToast("Code SQL copié dans le presse-papier !");
         }
 
         function initSupabaseFromStorage() {
@@ -687,7 +767,7 @@
                 `}).join('');
             } catch (err) {
                 console.error(err);
-                listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erreur lors du chargement des données. Vérifiez vos clés Supabase.</td></tr>`;
+                listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erreur lors du chargement. Vérifiez vos identifiants ou cliquez sur "Configuration Supabase".</td></tr>`;
             }
         }
 
@@ -708,7 +788,6 @@
 
             setSpecsColumns(data.specs_columns || 1);
 
-            // Parse specs array
             let specsArray = [];
             if (data.tech_specs) {
                 try {
@@ -726,7 +805,6 @@
             }
             renderSpecsBuilderRows(specsArray);
 
-            // Parse vendors array
             let vendorsArray = [];
             if (data.vendors) {
                 try {
@@ -747,7 +825,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        /* Custom Confirmation Modal handling */
         window.openDeleteModal = function(id) {
             activeDeleteId = id;
             const modal = document.getElementById('confirm-delete-modal');
@@ -772,7 +849,7 @@
 
             const { error } = await supabaseClient.from('products').delete().eq('id', id);
             if (error) {
-                showToast("Erreur lors de la suppression", true);
+                showToast("Erreur de suppression: " + error.message, true);
             } else {
                 showToast("Produit supprimé du catalogue !");
                 loadAdminProducts();
@@ -820,13 +897,15 @@
 
         document.getElementById('product-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!supabaseClient) return;
+            if (!supabaseClient) {
+                showToast("Session Supabase non initialisée. Veuillez vous reconnecter.", true);
+                return;
+            }
 
             const productId = document.getElementById('form-product-id').value;
             const techSpecsArray = getSpecsFromBuilder();
             const vendorsArray = getVendorsFromBuilder();
 
-            // First spec value fallbacks for backward compatibility
             const dimItem = techSpecsArray.find(s => s.label.toLowerCase().includes('dimen')) || techSpecsArray[0];
             const weightItem = techSpecsArray.find(s => s.label.toLowerCase().includes('poids') || s.label.toLowerCase().includes('weight')) || techSpecsArray[1];
             const matItem = techSpecsArray.find(s => s.label.toLowerCase().includes('matér') || s.label.toLowerCase().includes('mater')) || techSpecsArray[2];
@@ -843,7 +922,6 @@
                 specs_columns: currentSelectedColumns,
                 tech_specs: JSON.stringify(techSpecsArray),
                 vendors: JSON.stringify(vendorsArray),
-                // Legacy field fallbacks for backward compatibility
                 dimensions: dimItem ? dimItem.value : '65 x 60 x 85 cm',
                 weight: weightItem ? weightItem.value : '8.5 kg',
                 material: matItem ? matItem.value : 'Chêne massif & Aluminium',
@@ -852,20 +930,18 @@
                 vendor_ikea: vendorsArray.find(v => v.name.toLowerCase().includes('ikea'))?.url || vendorsArray[2]?.url || 'https://www.ikea.com',
             };
 
-            let error;
+            let res;
             if (productId) {
-                const res = await supabaseClient.from('products').update(payload).eq('id', productId);
-                error = res.error;
+                res = await supabaseClient.from('products').update(payload).eq('id', productId);
             } else {
-                const res = await supabaseClient.from('products').insert([payload]);
-                error = res.error;
+                res = await supabaseClient.from('products').insert([payload]);
             }
 
-            if (error) {
-                console.error(error);
-                showToast("Erreur lors de l'enregistrement", true);
+            if (res.error) {
+                console.error("Erreur Supabase:", res.error);
+                showToast(`Erreur d'enregistrement: ${res.error.message} (Code ${res.error.code || 'Inconnu'}). Cliquez sur "Configuration Supabase" en haut si une colonne manque.`, true);
             } else {
-                showToast(productId ? "Produit, vendeurs & fiche technique mis à jour !" : "Produit ajouté au catalogue !");
+                showToast(productId ? "Produit mis à jour avec succès !" : "Nouveau produit ajouté au catalogue !");
                 resetForm();
                 loadAdminProducts();
             }
