@@ -362,7 +362,7 @@
                 </button>
             </div>
             <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                Si l'ajout échoue, il est probable que votre table <code class="font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-red-500">products</code> n'ait pas toutes les colonnes ou que les règles RLS bloquent l'insertion. Exécutez ce script dans l'éditeur SQL de Supabase :
+                Si l'ajout échoue, vérifiez que votre table <code class="font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-red-500">products</code> dispose des bonnes colonnes et règles RLS. Exécutez ce script dans l'éditeur SQL de Supabase :
             </p>
             <pre id="sql-code-block" class="bg-slate-900 text-slate-200 p-4 rounded-2xl text-[11px] font-mono overflow-x-auto max-h-60 custom-scrollbar border border-slate-800 select-all"></pre>
             <div class="flex justify-between items-center pt-2">
@@ -404,16 +404,17 @@
     vendor_ikea TEXT
 );
 
--- Active RLS et autorise la lecture/écriture
+-- Activation de RLS
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Public Select" ON public.products;
-CREATE POLICY "Public Select" ON public.products FOR SELECT USING (true);
+-- Politiques RLS
+DROP POLICY IF EXISTS "Allow Public Read" ON public.products;
+CREATE POLICY "Allow Public Read" ON public.products FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Auth All" ON public.products;
-CREATE POLICY "Auth All" ON public.products FOR ALL USING (auth.role() = 'authenticated');`;
+DROP POLICY IF EXISTS "Allow Authenticated All" ON public.products;
+CREATE POLICY "Allow Authenticated All" ON public.products FOR ALL TO authenticated USING (true) WITH CHECK (true);`;
 
-        /* Default Specification & Vendors Presets */
+        /* Presets par défaut */
         const defaultSpecsPreset = [
             { label: 'Dimensions', value: '65 x 60 x 85 cm' },
             { label: 'Poids Net', value: '8.5 kg' },
@@ -464,7 +465,7 @@ CREATE POLICY "Auth All" ON public.products FOR ALL USING (auth.role() = 'authen
             });
         }
 
-        /* TOAST NOTIFICATIONS AVEC MESSAGES D'ERREURS DÉTAILLÉS */
+        /* TOAST NOTIFICATIONS */
         function showToast(message, isError = false) {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -667,7 +668,7 @@ CREATE POLICY "Auth All" ON public.products FOR ALL USING (auth.role() = 'authen
             const url = localStorage.getItem('supabaseUrl');
             const key = localStorage.getItem('supabaseKey');
             
-            if (url && key) {
+            if (url && key && window.supabase) {
                 document.getElementById('login-supabase-url').value = url;
                 document.getElementById('login-supabase-key').value = key;
                 try {
@@ -681,16 +682,20 @@ CREATE POLICY "Auth All" ON public.products FOR ALL USING (auth.role() = 'authen
         async function checkAuthSession() {
             if (!supabaseClient) return;
             
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('admin-dashboard').classList.remove('hidden');
-                renderSpecsBuilderRows(defaultSpecsPreset);
-                renderVendorsBuilderRows(defaultVendorsPreset);
-                loadAdminProducts();
-            } else {
-                document.getElementById('admin-dashboard').classList.add('hidden');
-                document.getElementById('auth-screen').classList.remove('hidden');
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    document.getElementById('auth-screen').classList.add('hidden');
+                    document.getElementById('admin-dashboard').classList.remove('hidden');
+                    renderSpecsBuilderRows(defaultSpecsPreset);
+                    renderVendorsBuilderRows(defaultVendorsPreset);
+                    loadAdminProducts();
+                } else {
+                    document.getElementById('admin-dashboard').classList.add('hidden');
+                    document.getElementById('auth-screen').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error("Erreur de session:", err);
             }
         }
 
@@ -767,14 +772,14 @@ CREATE POLICY "Auth All" ON public.products FOR ALL USING (auth.role() = 'authen
                 `}).join('');
             } catch (err) {
                 console.error(err);
-                listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erreur lors du chargement. Vérifiez vos identifiants ou cliquez sur "Configuration Supabase".</td></tr>`;
+                listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erreur lors du chargement: ${err.message || 'Vérifiez Supabase'}.</td></tr>`;
             }
         }
 
         window.editProduct = async function(id) {
             if (!supabaseClient) return;
-            const { data } = await supabaseClient.from('products').select('*').eq('id', id).single();
-            if (!data) return;
+            const { data, error } = await supabaseClient.from('products').select('*').eq('id', id).single();
+            if (error || !data) return;
 
             document.getElementById('form-product-id').value = data.id;
             document.getElementById('form-name').value = data.name || '';
@@ -799,8 +804,8 @@ CREATE POLICY "Auth All" ON public.products FOR ALL USING (auth.role() = 'authen
                     { label: 'Dimensions', value: data.dimensions || '65 x 60 x 85 cm' },
                     { label: 'Poids Net', value: data.weight || '8.5 kg' },
                     { label: 'Matériaux Principal', value: data.material || 'Chêne massif & Aluminium' },
-                    { label: 'Garantie', value: data.warranty || '2 ans constructeur' },
-                    { label: 'Origine', value: data.origin || 'Fabriqué en France' }
+                    { label: 'Garantie', value: '2 ans constructeur' },
+                    { label: 'Origine', value: 'Fabriqué en France' }
                 ];
             }
             renderSpecsBuilderRows(specsArray);
@@ -910,6 +915,7 @@ CREATE POLICY "Auth All" ON public.products FOR ALL USING (auth.role() = 'authen
             const weightItem = techSpecsArray.find(s => s.label.toLowerCase().includes('poids') || s.label.toLowerCase().includes('weight')) || techSpecsArray[1];
             const matItem = techSpecsArray.find(s => s.label.toLowerCase().includes('matér') || s.label.toLowerCase().includes('mater')) || techSpecsArray[2];
 
+            /* IMPORTANT: Transmettre les tableaux d'objets directement pour les colonnes JSONB Supabase */
             const payload = {
                 name: document.getElementById('form-name').value.trim(),
                 ean: document.getElementById('form-ean').value.trim() || null,
@@ -920,8 +926,8 @@ CREATE POLICY "Auth All" ON public.products FOR ALL USING (auth.role() = 'authen
                 description: document.getElementById('form-description').value.trim() || null,
                 specs_title: document.getElementById('form-specs-title').value.trim() || 'Fiche Technique',
                 specs_columns: currentSelectedColumns,
-                tech_specs: JSON.stringify(techSpecsArray),
-                vendors: JSON.stringify(vendorsArray),
+                tech_specs: techSpecsArray,
+                vendors: vendorsArray,
                 dimensions: dimItem ? dimItem.value : '65 x 60 x 85 cm',
                 weight: weightItem ? weightItem.value : '8.5 kg',
                 material: matItem ? matItem.value : 'Chêne massif & Aluminium',
@@ -938,8 +944,8 @@ CREATE POLICY "Auth All" ON public.products FOR ALL USING (auth.role() = 'authen
             }
 
             if (res.error) {
-                console.error("Erreur Supabase:", res.error);
-                showToast(`Erreur d'enregistrement: ${res.error.message} (Code ${res.error.code || 'Inconnu'}). Cliquez sur "Configuration Supabase" en haut si une colonne manque.`, true);
+                console.error("Erreur Supabase lors de l'insertion:", res.error);
+                showToast(`Erreur Supabase: ${res.error.message}. Exécutez le script SQL via le bouton en haut si le problème persiste.`, true);
             } else {
                 showToast(productId ? "Produit mis à jour avec succès !" : "Nouveau produit ajouté au catalogue !");
                 resetForm();
