@@ -83,7 +83,6 @@
     <!-- LOGIN SCREEN OVERLAY (Si non connecté) -->
     <div id="auth-screen" class="absolute inset-0 z-50 bg-slate-100 dark:bg-[#0f0f11] flex items-center justify-center p-4 transition-colors duration-300">
         
-        <!-- Toggle thème sur l'écran de connexion -->
         <button onclick="toggleTheme()" class="theme-toggle-btn absolute top-6 right-6 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-2 text-xs shadow-sm" title="Changer le mode d'affichage">
             <i class="theme-toggle-icon fa-solid fa-moon text-indigo-600 dark:text-amber-400"></i>
             <span class="theme-toggle-text font-medium hidden sm:inline">Mode Sombre</span>
@@ -130,7 +129,7 @@
         </div>
     </div>
 
-    <!-- MAIN ADMIN DASHBOARD (Masqué par défaut) -->
+    <!-- MAIN ADMIN DASHBOARD -->
     <main id="admin-dashboard" class="flex-1 w-full h-full p-6 sm:p-10 overflow-y-auto custom-scrollbar hidden">
         <div class="max-w-6xl mx-auto space-y-8">
             
@@ -140,12 +139,11 @@
                     <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-500 mb-1">
                         <i class="fa-solid fa-shield-halved"></i> Dashboard Sécurisé
                     </div>
-                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Gestionnaire de Produits 3D</h1>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pilotez votre catalogue, vos prix et vos redirections e-commerce en toute autonomie.</p>
+                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Gestionnaire de Produits, Vendeurs & Fiches 3D</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pilotez votre catalogue, vos prix, vos vendeurs illimités, la disposition des colonnes et la fiche technique sur mesure.</p>
                 </div>
                 
                 <div class="flex items-center gap-2.5 flex-wrap">
-                    <!-- Bouton Bascule Thème Clair / Sombre -->
                     <button onclick="toggleTheme()" class="theme-toggle-btn px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-medium transition flex items-center gap-2 shadow-sm" title="Changer le mode d'affichage">
                         <i class="theme-toggle-icon fa-solid fa-moon text-indigo-600 dark:text-amber-400"></i>
                         <span class="theme-toggle-text hidden sm:inline">Mode Sombre</span>
@@ -153,7 +151,7 @@
 
                     <a id="link-client-preview" href="index.html" target="_blank" class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-medium tracking-wide transition flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-eye text-red-500"></i>
-                        <span>Ouvrir le Visualiseur Client</span>
+                        <span>Ouvrir Visualiseur Client</span>
                     </a>
 
                     <button onclick="logoutAdmin()" class="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-red-500 text-slate-600 dark:text-slate-400 hover:text-red-500 text-xs font-medium transition flex items-center gap-2 shadow-sm">
@@ -177,6 +175,7 @@
                 <form id="product-form" class="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
                     <input type="hidden" id="form-product-id">
 
+                    <!-- Basic Infos -->
                     <div>
                         <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Nom du Produit *</label>
                         <input type="text" id="form-name" placeholder="ex: Chaise Ergonomique" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors" required>
@@ -188,12 +187,12 @@
                     </div>
 
                     <div>
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Prix Vente (€) *</label>
+                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Prix Vente Général (€) *</label>
                         <input type="text" id="form-price" placeholder="ex: 299,00 €" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors" required>
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">URL Modèle 3D Cloudflare R2 (.glb) *</label>
+                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">URL Modèle 3D (.glb) *</label>
                         <input type="url" id="form-model-url" placeholder="https://pub-xxx.r2.dev/3d-models/chaise.glb" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono transition-colors" required>
                     </div>
 
@@ -202,42 +201,88 @@
                         <input type="text" id="form-subtitle" placeholder="ex: Collection Studio 2026" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
                     </div>
 
-                    <div class="md:col-span-3">
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Description "À propos du produit"</label>
-                        <textarea id="form-description" rows="2" placeholder="Saisir la description complète du produit..." class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors"></textarea>
+                    <!-- Section Customization: "À propos" -->
+                    <div class="md:col-span-3 border-t border-slate-200 dark:border-slate-800/80 pt-4 mt-2">
+                        <div class="flex items-center gap-2 text-red-500 font-bold uppercase text-[11px] mb-3">
+                            <i class="fa-solid fa-align-left"></i> Personnalisation du bloc "À propos"
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Titre personnalisé du bloc</label>
+                                <input type="text" id="form-about-title" placeholder="À propos du produit" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Description complète "À propos"</label>
+                                <textarea id="form-description" rows="2" placeholder="Saisir la description complète du produit..." class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors"></textarea>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Fiche Technique -->
-                    <div>
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Dimensions</label>
-                        <input type="text" id="form-dimensions" placeholder="65 x 60 x 85 cm" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
-                    </div>
-                    <div>
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Poids Net</label>
-                        <input type="text" id="form-weight" placeholder="8.5 kg" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
-                    </div>
-                    <div>
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Matériaux</label>
-                        <input type="text" id="form-material" placeholder="Chêne massif & Aluminium" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
+                    <!-- Section Customization: "Fiche Technique & Colonnes" -->
+                    <div class="md:col-span-3 border-t border-slate-200 dark:border-slate-800/80 pt-4 mt-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                            <div>
+                                <div class="flex items-center gap-2 text-red-500 font-bold uppercase text-[11px]">
+                                    <i class="fa-solid fa-list-check"></i> Personnalisation de la Fiche Technique
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-light">Gérez dynamiquement le nombre de colonnes et les critères de votre fiche technique.</p>
+                            </div>
+
+                            <!-- Column Count Selector -->
+                            <div class="flex items-center gap-2 bg-slate-200/60 dark:bg-slate-900 p-1 rounded-xl border border-slate-300/60 dark:border-slate-800">
+                                <span class="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400 px-2">Disposition Colonnes:</span>
+                                <button type="button" onclick="setSpecsColumns(1)" id="btn-col-1" class="col-btn px-3 py-1 rounded-lg text-xs font-semibold transition bg-white dark:bg-slate-800 text-red-500 shadow-sm border border-slate-200 dark:border-slate-700">1 Col</button>
+                                <button type="button" onclick="setSpecsColumns(2)" id="btn-col-2" class="col-btn px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">2 Cols</button>
+                                <button type="button" onclick="setSpecsColumns(3)" id="btn-col-3" class="col-btn px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">3 Cols</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Titre du bloc Fiche Technique</label>
+                                <input type="text" id="form-specs-title" placeholder="Fiche Technique" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Spec Rows Container -->
+                        <div class="space-y-3 bg-slate-100/50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 tracking-wider">Critères & Caractéristiques (Lignes personnalisées)</span>
+                                <button type="button" onclick="addSpecRow()" class="px-3 py-1.5 rounded-xl bg-red-600/10 hover:bg-red-600 text-red-600 hover:text-white border border-red-500/30 text-xs font-medium transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-plus text-[10px]"></i> Ajouter un critère
+                                </button>
+                            </div>
+
+                            <div id="specs-builder-container" class="space-y-2">
+                                <!-- Dynamic Rows rendered here via JS -->
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Liens Vendeurs -->
-                    <div>
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Lien Vendeur Amazon</label>
-                        <input type="url" id="form-vendor-amazon" placeholder="https://www.amazon.com/dp/..." class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono transition-colors">
-                    </div>
-                    <div>
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Lien Vendeur Wayfair</label>
-                        <input type="url" id="form-vendor-wayfair" placeholder="https://www.wayfair.com/..." class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono transition-colors">
-                    </div>
-                    <div>
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Lien Vendeur IKEA</label>
-                        <input type="url" id="form-vendor-ikea" placeholder="https://www.ikea.com/..." class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono transition-colors">
+                    <!-- GESTION DYNAMIQUE ET TOTALE DES VENDEURS ET PARTENAIRES -->
+                    <div class="md:col-span-3 border-t border-slate-200 dark:border-slate-800/80 pt-4 mt-2">
+                        <div class="space-y-3 bg-slate-100/50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div>
+                                    <div class="flex items-center gap-2 text-red-500 font-bold uppercase text-[11px]">
+                                        <i class="fa-solid fa-cart-shopping"></i> Gestion Dynamique des Vendeurs & Liens (Contrôle Total)
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-light">Ajoutez autant de vendeurs que vous souhaitez (Amazon, IKEA, Wayfair, Fnac, site web dédié, etc.).</p>
+                                </div>
+                                <button type="button" onclick="addVendorRow()" class="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-600/20 text-xs font-medium transition flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
+                                    <i class="fa-solid fa-plus text-[10px]"></i> Ajouter un vendeur
+                                </button>
+                            </div>
+
+                            <div id="vendors-builder-container" class="space-y-2 pt-1">
+                                <!-- Dynamic Vendor Rows rendered here via JS -->
+                            </div>
+                        </div>
                     </div>
 
                     <div class="md:col-span-3 flex justify-end pt-3">
-                        <button type="submit" class="px-7 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium uppercase tracking-wider transition shadow-lg shadow-red-600/30">
-                            Enregistrer dans Supabase
+                        <button type="submit" class="px-8 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium uppercase tracking-wider transition shadow-lg shadow-red-600/30 flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Enregistrer le Produit dans Supabase
                         </button>
                     </div>
                 </form>
@@ -261,13 +306,15 @@
                                 <th class="p-3.5 rounded-l-xl">Nom Produit</th>
                                 <th class="p-3.5">EAN</th>
                                 <th class="p-3.5">Prix</th>
+                                <th class="p-3.5">Fiche Tech</th>
+                                <th class="p-3.5">Vendeurs</th>
                                 <th class="p-3.5">Fichier 3D (.glb)</th>
                                 <th class="p-3.5 text-right rounded-r-xl">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="admin-products-list" class="divide-y divide-slate-200 dark:divide-slate-800/80">
                             <tr>
-                                <td colspan="5" class="p-6 text-center text-slate-500 dark:text-slate-400">Connexion à la base de données...</td>
+                                <td colspan="7" class="p-6 text-center text-slate-500 dark:text-slate-400">Connexion à la base de données...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -277,13 +324,51 @@
         </div>
     </main>
 
+    <!-- CUSTOM CONFIRM DELETE MODAL -->
+    <div id="confirm-delete-modal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-ui max-w-sm w-full rounded-3xl p-6 shadow-2xl space-y-4 text-center transform scale-95 transition-transform duration-300" id="delete-modal-card">
+            <div class="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center text-xl mx-auto shadow-md">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h3 class="font-semibold text-slate-900 dark:text-white text-base">Supprimer ce produit ?</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Cette action est irréversible et retirera le modèle du catalogue Supabase.</p>
+            </div>
+            <div class="flex items-center gap-3 pt-2">
+                <button type="button" onclick="closeDeleteModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition">
+                    Annuler
+                </button>
+                <button type="button" id="btn-confirm-delete" class="w-1/2 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-medium transition shadow-lg shadow-red-600/30">
+                    Confirmer
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST NOTIFICATIONS -->
     <div id="toast-container" class="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
     <script>
         let supabaseClient = null;
+        let currentSelectedColumns = 1;
+        let activeDeleteId = null;
 
-        /* GESTION DU THÈME CLAIR / SOMBRE */
+        /* Default Specification & Vendors Presets */
+        const defaultSpecsPreset = [
+            { label: 'Dimensions', value: '65 x 60 x 85 cm' },
+            { label: 'Poids Net', value: '8.5 kg' },
+            { label: 'Matériaux Principal', value: 'Chêne massif & Aluminium' },
+            { label: 'Garantie', value: '2 ans constructeur' },
+            { label: 'Origine', value: 'Fabriqué en France' }
+        ];
+
+        const defaultVendorsPreset = [
+            { name: 'Amazon', price: '299,00 €', url: 'https://www.amazon.com' },
+            { name: 'Wayfair', price: '309,00 €', url: 'https://www.wayfair.com' },
+            { name: 'IKEA', price: '289,00 €', url: 'https://www.ikea.com' }
+        ];
+
+        /* THÈME CLAIR / SOMBRE */
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -311,11 +396,7 @@
                 const text = btn.querySelector('.theme-toggle-text');
                 
                 if (icon) {
-                    if (isDark) {
-                        icon.className = 'theme-toggle-icon fa-solid fa-sun text-amber-400';
-                    } else {
-                        icon.className = 'theme-toggle-icon fa-solid fa-moon text-indigo-600';
-                    }
+                    icon.className = isDark ? 'theme-toggle-icon fa-solid fa-sun text-amber-400' : 'theme-toggle-icon fa-solid fa-moon text-indigo-600';
                 }
                 if (text) {
                     text.textContent = isDark ? 'Mode Clair' : 'Mode Sombre';
@@ -323,7 +404,7 @@
             });
         }
 
-        /* NOTIFICATIONS TOAST */
+        /* TOAST NOTIFICATIONS */
         function showToast(message, isError = false) {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -339,7 +420,169 @@
             }, 3000);
         }
 
-        /* INITIALISATION SUPABASE */
+        function setSpecsColumns(cols) {
+            currentSelectedColumns = parseInt(cols, 10) || 1;
+            
+            [1, 2, 3].forEach(c => {
+                const btn = document.getElementById(`btn-col-${c}`);
+                if (!btn) return;
+                if (c === currentSelectedColumns) {
+                    btn.className = "col-btn px-3 py-1 rounded-lg text-xs font-semibold transition bg-white dark:bg-slate-800 text-red-500 shadow-sm border border-slate-200 dark:border-slate-700";
+                } else {
+                    btn.className = "col-btn px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+                }
+            });
+        }
+
+        /* DYNAMIC SPECS BUILDER */
+        function renderSpecsBuilderRows(specsList) {
+            const container = document.getElementById('specs-builder-container');
+            if (!container) return;
+
+            const list = (Array.isArray(specsList) && specsList.length > 0) ? specsList : defaultSpecsPreset;
+            
+            container.innerHTML = list.map((item, index) => `
+                <div class="spec-row flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition">
+                    <span class="text-[10px] font-mono text-slate-400 w-5 text-center shrink-0">#${index + 1}</span>
+                    <input type="text" class="spec-label w-1/3 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 font-medium" placeholder="Label ex: Dimensions" value="${item.label || ''}">
+                    <input type="text" class="spec-value flex-1 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500" placeholder="Valeur ex: 65 x 60 x 85 cm" value="${item.value || ''}">
+                    
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" onclick="moveSpecRow(${index}, -1)" title="Monter" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                        <button type="button" onclick="moveSpecRow(${index}, 1)" title="Descendre" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </button>
+                        <button type="button" onclick="removeSpecRow(${index})" title="Supprimer" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-600 text-red-500 hover:text-white flex items-center justify-center text-xs transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getSpecsFromBuilder() {
+            const rows = document.querySelectorAll('.spec-row');
+            const result = [];
+            rows.forEach(r => {
+                const label = r.querySelector('.spec-label')?.value.trim();
+                const value = r.querySelector('.spec-value')?.value.trim();
+                if (label || value) {
+                    result.push({ label: label || 'Critère', value: value || '-' });
+                }
+            });
+            return result;
+        }
+
+        function addSpecRow() {
+            const current = getSpecsFromBuilder();
+            current.push({ label: '', value: '' });
+            renderSpecsBuilderRows(current);
+        }
+
+        function removeSpecRow(index) {
+            const current = getSpecsFromBuilder();
+            if (current.length <= 1) {
+                showToast("Au moins une caractéristique doit rester.", true);
+                return;
+            }
+            current.splice(index, 1);
+            renderSpecsBuilderRows(current);
+        }
+
+        function moveSpecRow(index, direction) {
+            const current = getSpecsFromBuilder();
+            const target = index + direction;
+            if (target < 0 || target >= current.length) return;
+            const temp = current[index];
+            current[index] = current[target];
+            current[target] = temp;
+            renderSpecsBuilderRows(current);
+        }
+
+        /* DYNAMIC VENDORS BUILDER */
+        function renderVendorsBuilderRows(vendorsList) {
+            const container = document.getElementById('vendors-builder-container');
+            if (!container) return;
+
+            const list = (Array.isArray(vendorsList) && vendorsList.length > 0) ? vendorsList : defaultVendorsPreset;
+
+            container.innerHTML = list.map((item, index) => `
+                <div class="vendor-row flex flex-col md:flex-row items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition">
+                    <span class="text-[10px] font-mono text-slate-400 w-5 text-center shrink-0 hidden md:block">#${index + 1}</span>
+                    <div class="w-full md:w-1/4">
+                        <label class="block md:hidden text-[9px] uppercase text-slate-400 mb-0.5">Nom du Vendeur</label>
+                        <input type="text" class="vendor-name w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 font-medium" placeholder="ex: Amazon, Fnac..." value="${item.name || ''}">
+                    </div>
+                    <div class="w-full md:w-1/4">
+                        <label class="block md:hidden text-[9px] uppercase text-slate-400 mb-0.5">Prix Spécifique Vendeur</label>
+                        <input type="text" class="vendor-price w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500" placeholder="ex: 299,00 €" value="${item.price || ''}">
+                    </div>
+                    <div class="flex-1 w-full">
+                        <label class="block md:hidden text-[9px] uppercase text-slate-400 mb-0.5">Lien Web / Redirection</label>
+                        <input type="url" class="vendor-url w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 font-mono" placeholder="ex: https://www.amazon.com/dp/..." value="${item.url || ''}">
+                    </div>
+                    
+                    <div class="flex items-center gap-1 shrink-0 self-end md:self-center pt-1 md:pt-0">
+                        <button type="button" onclick="moveVendorRow(${index}, -1)" title="Monter" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                        <button type="button" onclick="moveVendorRow(${index}, 1)" title="Descendre" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </button>
+                        <button type="button" onclick="removeVendorRow(${index})" title="Supprimer ce vendeur" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-600 text-red-500 hover:text-white flex items-center justify-center text-xs transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getVendorsFromBuilder() {
+            const rows = document.querySelectorAll('.vendor-row');
+            const result = [];
+            rows.forEach(r => {
+                const name = r.querySelector('.vendor-name')?.value.trim();
+                const price = r.querySelector('.vendor-price')?.value.trim();
+                const url = r.querySelector('.vendor-url')?.value.trim();
+                if (name || url || price) {
+                    result.push({
+                        name: name || 'Vendeur',
+                        price: price || '',
+                        url: url || '#'
+                    });
+                }
+            });
+            return result;
+        }
+
+        function addVendorRow() {
+            const current = getVendorsFromBuilder();
+            current.push({ name: '', price: '', url: '' });
+            renderVendorsBuilderRows(current);
+        }
+
+        function removeVendorRow(index) {
+            const current = getVendorsFromBuilder();
+            if (current.length <= 1) {
+                showToast("Au moins un vendeur doit être présent dans la liste.", true);
+                return;
+            }
+            current.splice(index, 1);
+            renderVendorsBuilderRows(current);
+        }
+
+        function moveVendorRow(index, direction) {
+            const current = getVendorsFromBuilder();
+            const target = index + direction;
+            if (target < 0 || target >= current.length) return;
+            const temp = current[index];
+            current[index] = current[target];
+            current[target] = temp;
+            renderVendorsBuilderRows(current);
+        }
+
         function initSupabaseFromStorage() {
             const url = localStorage.getItem('supabaseUrl');
             const key = localStorage.getItem('supabaseKey');
@@ -362,6 +605,8 @@
             if (session) {
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('admin-dashboard').classList.remove('hidden');
+                renderSpecsBuilderRows(defaultSpecsPreset);
+                renderVendorsBuilderRows(defaultVendorsPreset);
                 loadAdminProducts();
             } else {
                 document.getElementById('admin-dashboard').classList.add('hidden');
@@ -381,39 +626,68 @@
         async function loadAdminProducts() {
             if (!supabaseClient) return;
             const listEl = document.getElementById('admin-products-list');
-            listEl.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500 dark:text-slate-400">Chargement des produits...</td></tr>`;
+            listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500 dark:text-slate-400">Chargement des produits...</td></tr>`;
 
             try {
                 const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
-                    listEl.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500 dark:text-slate-400">Aucun produit dans Supabase pour le moment.</td></tr>`;
+                    listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500 dark:text-slate-400">Aucun produit dans Supabase pour le moment.</td></tr>`;
                     return;
                 }
 
-                listEl.innerHTML = data.map(p => `
+                listEl.innerHTML = data.map(p => {
+                    let specsCount = 0;
+                    if (p.tech_specs) {
+                        try {
+                            const parsed = typeof p.tech_specs === 'string' ? JSON.parse(p.tech_specs) : p.tech_specs;
+                            if (Array.isArray(parsed)) specsCount = parsed.length;
+                        } catch(e) {}
+                    }
+                    if (specsCount === 0 && (p.dimensions || p.material)) specsCount = 3;
+
+                    let vendorsCount = 0;
+                    if (p.vendors) {
+                        try {
+                            const parsedV = typeof p.vendors === 'string' ? JSON.parse(p.vendors) : p.vendors;
+                            if (Array.isArray(parsedV)) vendorsCount = parsedV.length;
+                        } catch(e) {}
+                    }
+                    if (vendorsCount === 0 && (p.vendor_amazon || p.vendor_wayfair || p.vendor_ikea)) vendorsCount = 3;
+
+                    return `
                     <tr class="hover:bg-slate-200/50 dark:hover:bg-slate-900/60 transition">
                         <td class="p-3.5 font-medium text-slate-900 dark:text-white">${p.name}</td>
                         <td class="p-3.5 font-mono text-slate-500 dark:text-slate-400 text-[11px]">${p.ean || '-'}</td>
                         <td class="p-3.5 text-red-500 font-semibold">${p.price || '-'}</td>
-                        <td class="p-3.5 font-mono text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[220px]" title="${p.model_url}">${p.model_url}</td>
+                        <td class="p-3.5">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-500 border border-red-500/30">
+                                ${p.specs_columns || 1} col. (${specsCount} crit.)
+                            </span>
+                        </td>
+                        <td class="p-3.5">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                <i class="fa-solid fa-store mr-1"></i>${vendorsCount} vendeur(s)
+                            </span>
+                        </td>
+                        <td class="p-3.5 font-mono text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]" title="${p.model_url}">${p.model_url}</td>
                         <td class="p-3.5 text-right space-x-2 shrink-0">
-                            <a href="index.html?id=${p.id}" target="_blank" title="Voir dans le visualiseur" class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition">
+                            <a href="index.html?id=${p.id}" target="_blank" title="Voir dans le visualiseur client" class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
                             <button onclick="editProduct('${p.id}')" title="Éditer" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
-                            <button onclick="deleteProduct('${p.id}')" title="Supprimer" class="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition">
+                            <button onclick="openDeleteModal('${p.id}')" title="Supprimer" class="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </td>
                     </tr>
-                `).join('');
+                `}).join('');
             } catch (err) {
                 console.error(err);
-                listEl.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Erreur lors du chargement des données. Vérifiez vos clés Supabase.</td></tr>`;
+                listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erreur lors du chargement des données. Vérifiez vos clés Supabase.</td></tr>`;
             }
         }
 
@@ -428,40 +702,93 @@
             document.getElementById('form-price').value = data.price || '';
             document.getElementById('form-model-url').value = data.model_url || '';
             document.getElementById('form-subtitle').value = data.subtitle || '';
+            document.getElementById('form-about-title').value = data.about_title || '';
             document.getElementById('form-description').value = data.description || '';
-            document.getElementById('form-dimensions').value = data.dimensions || '';
-            document.getElementById('form-weight').value = data.weight || '';
-            document.getElementById('form-material').value = data.material || '';
-            document.getElementById('form-vendor-amazon').value = data.vendor_amazon || '';
-            document.getElementById('form-vendor-wayfair').value = data.vendor_wayfair || '';
-            document.getElementById('form-vendor-ikea').value = data.vendor_ikea || '';
+            document.getElementById('form-specs-title').value = data.specs_title || '';
 
-            document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-pen text-indigo-500"></i> Modifier le produit`;
+            setSpecsColumns(data.specs_columns || 1);
+
+            // Parse specs array
+            let specsArray = [];
+            if (data.tech_specs) {
+                try {
+                    specsArray = typeof data.tech_specs === 'string' ? JSON.parse(data.tech_specs) : data.tech_specs;
+                } catch(e) {}
+            }
+            if (!Array.isArray(specsArray) || specsArray.length === 0) {
+                specsArray = [
+                    { label: 'Dimensions', value: data.dimensions || '65 x 60 x 85 cm' },
+                    { label: 'Poids Net', value: data.weight || '8.5 kg' },
+                    { label: 'Matériaux Principal', value: data.material || 'Chêne massif & Aluminium' },
+                    { label: 'Garantie', value: data.warranty || '2 ans constructeur' },
+                    { label: 'Origine', value: data.origin || 'Fabriqué en France' }
+                ];
+            }
+            renderSpecsBuilderRows(specsArray);
+
+            // Parse vendors array
+            let vendorsArray = [];
+            if (data.vendors) {
+                try {
+                    vendorsArray = typeof data.vendors === 'string' ? JSON.parse(data.vendors) : data.vendors;
+                } catch(e) {}
+            }
+            if (!Array.isArray(vendorsArray) || vendorsArray.length === 0) {
+                vendorsArray = [];
+                if (data.vendor_amazon) vendorsArray.push({ name: 'Amazon', price: data.price || '', url: data.vendor_amazon });
+                if (data.vendor_wayfair) vendorsArray.push({ name: 'Wayfair', price: data.price || '', url: data.vendor_wayfair });
+                if (data.vendor_ikea) vendorsArray.push({ name: 'IKEA', price: data.price || '', url: data.vendor_ikea });
+                if (vendorsArray.length === 0) vendorsArray = defaultVendorsPreset;
+            }
+            renderVendorsBuilderRows(vendorsArray);
+
+            document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-pen text-indigo-500"></i> Modifier le produit, vendeurs & fiche technique`;
             document.getElementById('btn-reset-form').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        window.deleteProduct = async function(id) {
-            if (!supabaseClient) return;
-            if (!confirm("Voulez-vous vraiment supprimer ce produit de la base ?")) return;
+        /* Custom Confirmation Modal handling */
+        window.openDeleteModal = function(id) {
+            activeDeleteId = id;
+            const modal = document.getElementById('confirm-delete-modal');
+            const card = document.getElementById('delete-modal-card');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-95');
+        };
+
+        window.closeDeleteModal = function() {
+            activeDeleteId = null;
+            const modal = document.getElementById('confirm-delete-modal');
+            const card = document.getElementById('delete-modal-card');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            card.classList.add('scale-95');
+        };
+
+        document.getElementById('btn-confirm-delete')?.addEventListener('click', async () => {
+            if (!activeDeleteId || !supabaseClient) return;
+
+            const id = activeDeleteId;
+            closeDeleteModal();
 
             const { error } = await supabaseClient.from('products').delete().eq('id', id);
             if (error) {
                 showToast("Erreur lors de la suppression", true);
             } else {
-                showToast("Produit supprimé avec succès !");
+                showToast("Produit supprimé du catalogue !");
                 loadAdminProducts();
             }
-        };
+        });
 
         function resetForm() {
             document.getElementById('form-product-id').value = '';
             document.getElementById('product-form').reset();
+            setSpecsColumns(1);
+            renderSpecsBuilderRows(defaultSpecsPreset);
+            renderVendorsBuilderRows(defaultVendorsPreset);
             document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-plus text-red-500"></i> Ajouter un Nouveau Produit 3D`;
             document.getElementById('btn-reset-form').classList.add('hidden');
         }
 
-        /* EVENEMENTS ET FORMULAIRES */
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const url = document.getElementById('login-supabase-url').value.trim();
@@ -496,19 +823,33 @@
             if (!supabaseClient) return;
 
             const productId = document.getElementById('form-product-id').value;
+            const techSpecsArray = getSpecsFromBuilder();
+            const vendorsArray = getVendorsFromBuilder();
+
+            // First spec value fallbacks for backward compatibility
+            const dimItem = techSpecsArray.find(s => s.label.toLowerCase().includes('dimen')) || techSpecsArray[0];
+            const weightItem = techSpecsArray.find(s => s.label.toLowerCase().includes('poids') || s.label.toLowerCase().includes('weight')) || techSpecsArray[1];
+            const matItem = techSpecsArray.find(s => s.label.toLowerCase().includes('matér') || s.label.toLowerCase().includes('mater')) || techSpecsArray[2];
+
             const payload = {
                 name: document.getElementById('form-name').value.trim(),
                 ean: document.getElementById('form-ean').value.trim() || null,
                 price: document.getElementById('form-price').value.trim(),
                 model_url: document.getElementById('form-model-url').value.trim(),
                 subtitle: document.getElementById('form-subtitle').value.trim() || 'Collection Studio • Modèle 3D Haute Définition',
+                about_title: document.getElementById('form-about-title').value.trim() || 'À propos du produit',
                 description: document.getElementById('form-description').value.trim() || null,
-                dimensions: document.getElementById('form-dimensions').value.trim() || '65 x 60 x 85 cm',
-                weight: document.getElementById('form-weight').value.trim() || '8.5 kg',
-                material: document.getElementById('form-material').value.trim() || 'Chêne massif & Aluminium',
-                vendor_amazon: document.getElementById('form-vendor-amazon').value.trim() || 'https://www.amazon.com',
-                vendor_wayfair: document.getElementById('form-vendor-wayfair').value.trim() || 'https://www.wayfair.com',
-                vendor_ikea: document.getElementById('form-vendor-ikea').value.trim() || 'https://www.ikea.com',
+                specs_title: document.getElementById('form-specs-title').value.trim() || 'Fiche Technique',
+                specs_columns: currentSelectedColumns,
+                tech_specs: JSON.stringify(techSpecsArray),
+                vendors: JSON.stringify(vendorsArray),
+                // Legacy field fallbacks for backward compatibility
+                dimensions: dimItem ? dimItem.value : '65 x 60 x 85 cm',
+                weight: weightItem ? weightItem.value : '8.5 kg',
+                material: matItem ? matItem.value : 'Chêne massif & Aluminium',
+                vendor_amazon: vendorsArray.find(v => v.name.toLowerCase().includes('amazon'))?.url || vendorsArray[0]?.url || 'https://www.amazon.com',
+                vendor_wayfair: vendorsArray.find(v => v.name.toLowerCase().includes('wayfair'))?.url || vendorsArray[1]?.url || 'https://www.wayfair.com',
+                vendor_ikea: vendorsArray.find(v => v.name.toLowerCase().includes('ikea'))?.url || vendorsArray[2]?.url || 'https://www.ikea.com',
             };
 
             let error;
@@ -524,7 +865,7 @@
                 console.error(error);
                 showToast("Erreur lors de l'enregistrement", true);
             } else {
-                showToast(productId ? "Produit mis à jour !" : "Produit ajouté au catalogue !");
+                showToast(productId ? "Produit, vendeurs & fiche technique mis à jour !" : "Produit ajouté au catalogue !");
                 resetForm();
                 loadAdminProducts();
             }
