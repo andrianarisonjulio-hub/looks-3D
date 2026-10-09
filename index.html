@@ -204,7 +204,7 @@
                 </p>
             </div>
 
-            <button id="btn-availability" class="pointer-events-auto px-4 py-2.5 rounded-full bg-red-600 hover:bg-red-500 active:scale-95 text-white font-light text-xs sm:text-sm tracking-wide shadow-lg shadow-red-600/30 flex items-center gap-2.5 transition-all duration-200 hover:shadow-red-600/50">
+            <button onclick="openAvailabilityModal()" class="pointer-events-auto px-4 py-2.5 rounded-full bg-red-600 hover:bg-red-500 active:scale-95 text-white font-light text-xs sm:text-sm tracking-wide shadow-lg shadow-red-600/30 flex items-center gap-2.5 transition-all duration-200 hover:shadow-red-600/50">
                 <span>Acheter ce produit au meilleur prix</span>
                 <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
                     <i class="fa-solid fa-bag-shopping text-white text-[10px]"></i>
@@ -262,7 +262,7 @@
                     <h3 id="modal-product-name" class="font-medium text-slate-900 dark:text-white uppercase text-base tracking-wide">CHAISE ERGONOMIQUE STUDIO</h3>
                     <p id="modal-product-price" class="text-sm font-semibold text-red-600 mt-0.5">299,00 €</p>
                 </div>
-                <button id="btn-close-modal" class="w-8 h-8 rounded-full bg-slate-200/80 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                <button id="btn-close-modal" onclick="closeAvailabilityModal()" class="w-8 h-8 rounded-full bg-slate-200/80 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700 transition">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
@@ -360,7 +360,7 @@
 
             controls.addEventListener('change', updateZoomBadge);
 
-            // Lighting
+            // Éclairage Studio
             ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
             scene.add(ambientLight);
 
@@ -378,7 +378,7 @@
             hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
             scene.add(hemiLight);
 
-            // Floor Shadow Plane
+            // Ombre au sol
             const planeGeo = new THREE.PlaneGeometry(20, 20);
             const planeMat = new THREE.ShadowMaterial({ opacity: 0.15 });
             shadowPlane = new THREE.Mesh(planeGeo, planeMat);
@@ -644,177 +644,96 @@
                     { name: 'Amazon', price: '249,00 €', url: 'https://www.amazon.com' },
                     { name: 'Wayfair', price: '259,00 €', url: 'https://www.wayfair.com' },
                     { name: 'IKEA', price: '239,00 €', url: 'https://www.ikea.com' }
-                ],
-                model_url: null
+                ]
             });
         }
 
-        function renderDynamicSpecsUI(specsArray, columns) {
-            const container = document.getElementById('dynamic-specs-container');
-            if (!container) return;
+        function applyProductToUI(product) {
+            activeProduct = product;
 
-            const cols = parseInt(columns, 10) || 1;
-            const items = (Array.isArray(specsArray) && specsArray.length > 0) ? specsArray : [];
+            document.getElementById('product-title').textContent = product.name || 'Produit 3D';
+            document.getElementById('product-subtitle').textContent = product.subtitle || 'Collection Studio';
+            document.getElementById('modal-product-name').textContent = product.name || 'Produit 3D';
+            document.getElementById('modal-product-price').textContent = product.price || '';
 
-            if (items.length === 0) {
-                container.innerHTML = `<div class="p-3 text-slate-400 font-light text-center">Aucune caractéristique disponible.</div>`;
-                return;
+            document.getElementById('label-about-title').innerHTML = `<i class="fa-solid fa-align-left text-red-500"></i> ${product.about_title || 'À propos du produit'}`;
+            document.getElementById('desc-full-text').textContent = product.description || 'Aucune description fournie pour ce produit.';
+
+            document.getElementById('label-specs-title').innerHTML = `<i class="fa-solid fa-list-check text-red-500"></i> ${product.specs_title || 'Fiche Technique'}`;
+
+            // Rendu des critères
+            let specsList = [];
+            if (product.tech_specs) {
+                specsList = typeof product.tech_specs === 'string' ? JSON.parse(product.tech_specs) : product.tech_specs;
             }
-
-            if (cols === 1) {
-                container.innerHTML = `
-                    <div class="divide-y divide-slate-200 dark:divide-slate-800 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden font-light">
-                        ${items.map(item => `
-                            <div class="flex justify-between items-center p-3">
-                                <span class="text-slate-500 dark:text-slate-400 font-medium text-[11px]">${item.label || 'Critère'}</span>
-                                <span class="text-slate-900 dark:text-slate-100 font-normal text-right">${item.value || '-'}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            } else if (cols === 2) {
-                container.innerHTML = `
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 font-light">
-                        ${items.map(item => `
-                            <div class="p-3 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between space-y-1">
-                                <span class="text-[10px] uppercase font-semibold tracking-wider text-slate-400 dark:text-slate-500">${item.label || 'Critère'}</span>
-                                <span class="text-slate-900 dark:text-slate-100 font-normal text-xs leading-snug">${item.value || '-'}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 font-light">
-                        ${items.map(item => `
-                            <div class="p-2.5 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 text-center flex flex-col justify-center space-y-1">
-                                <span class="text-[9px] uppercase font-semibold text-slate-400 truncate">${item.label || 'Critère'}</span>
-                                <span class="text-slate-900 dark:text-slate-100 font-medium text-[11px] leading-tight truncate" title="${item.value}">${item.value || '-'}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-        }
-
-        function getVendorIconInfo(name) {
-            const lower = (name || '').toLowerCase();
-            if (lower.includes('amazon')) return { icon: 'fa-brands fa-amazon', bg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400', tag: 'Europe & International' };
-            if (lower.includes('wayfair')) return { icon: 'fa-solid fa-store', bg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400', tag: 'Ameublement & Déco' };
-            if (lower.includes('ikea')) return { icon: 'fa-solid fa-couch', bg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', tag: 'Boutiques & Livraisons' };
-            if (lower.includes('fnac') || lower.includes('darty')) return { icon: 'fa-solid fa-bolt', bg: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400', tag: 'High-Tech & Maison' };
-            if (lower.includes('cdiscount')) return { icon: 'fa-solid fa-tag', bg: 'bg-red-500/10 text-red-600 dark:text-red-400', tag: 'E-Commerce' };
-            if (lower.includes('ebay')) return { icon: 'fa-brands fa-ebay', bg: 'bg-blue-600/10 text-blue-600 dark:text-blue-400', tag: 'Marketplace' };
-            if (lower.includes('boulanger')) return { icon: 'fa-solid fa-plug', bg: 'bg-orange-500/10 text-orange-600 dark:text-orange-400', tag: 'Électroménager & Tech' };
-            return { icon: 'fa-solid fa-bag-shopping', bg: 'bg-red-500/10 text-red-600 dark:text-red-400', tag: 'Vendeur Partenaire' };
-        }
-
-        function renderVendorsModalUI(vendorsArray, productPrice) {
-            const container = document.getElementById('modal-vendors-container');
-            if (!container) return;
-
-            const list = (Array.isArray(vendorsArray) && vendorsArray.length > 0) ? vendorsArray : [];
-
-            if (list.length === 0) {
-                container.innerHTML = `
-                    <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900 text-center text-xs text-slate-500 dark:text-slate-400">
-                        Aucun vendeur n'a encore été configuré pour ce produit.
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = list.map(v => {
-                const info = getVendorIconInfo(v.name);
-                const priceDisplay = v.price || productPrice || 'Voir le prix';
-                const url = v.url || '#';
-
-                return `
-                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/80 hover:bg-slate-200/80 dark:bg-slate-900/80 dark:hover:bg-slate-800 transition border border-slate-200/80 dark:border-slate-800 group">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-xl ${info.bg} flex items-center justify-center text-base shrink-0">
-                                <i class="${info.icon}"></i>
-                            </div>
-                            <div>
-                                <div class="text-xs font-semibold text-slate-900 dark:text-white">${v.name || 'Vendeur'}</div>
-                                <span class="text-[10px] font-light text-slate-500 dark:text-slate-400">${info.tag}</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-semibold text-slate-900 dark:text-white">${priceDisplay}</span>
-                            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-red-500 transition"></i>
-                        </div>
-                    </a>
-                `;
-            }).join('');
-        }
-
-        function applyProductToUI(prod) {
-            activeProduct = prod;
-
-            document.getElementById('product-title').textContent = (prod.name || 'NOM DU PRODUIT').toUpperCase();
-            document.getElementById('product-subtitle').textContent = prod.subtitle || 'Collection Studio • Modèle 3D Haute Définition';
-            document.getElementById('modal-product-name').textContent = (prod.name || 'NOM DU PRODUIT').toUpperCase();
-            document.getElementById('modal-product-price').textContent = prod.price || '299,00 €';
-
-            const aboutTitle = document.getElementById('label-about-title');
-            if (aboutTitle) aboutTitle.innerHTML = `<i class="fa-solid fa-align-left text-red-500"></i> ${prod.about_title || 'À propos du produit'}`;
-            
-            const descEl = document.getElementById('desc-full-text');
-            if (descEl) descEl.textContent = prod.description || "Conçue pour un confort optimal et une esthétique épurée, cette pièce allie l'ergonomie moderne à des matériaux haut de gamme.";
-
-            const specsTitle = document.getElementById('label-specs-title');
-            if (specsTitle) specsTitle.innerHTML = `<i class="fa-solid fa-list-check text-red-500"></i> ${prod.specs_title || 'Fiche Technique'}`;
-
-            let specsArray = [];
-            if (prod.tech_specs) {
-                try {
-                    specsArray = typeof prod.tech_specs === 'string' ? JSON.parse(prod.tech_specs) : prod.tech_specs;
-                } catch(e) {}
-            }
-            if (!Array.isArray(specsArray) || specsArray.length === 0) {
-                specsArray = [
-                    { label: 'Dimensions', value: prod.dimensions || '65 x 60 x 85 cm' },
-                    { label: 'Poids Net', value: prod.weight || '8.5 kg' },
-                    { label: 'Matériaux Principal', value: prod.material || 'Chêne massif & Aluminium' },
-                    { label: 'Garantie', value: '2 ans constructeur' },
-                    { label: 'Origine', value: 'Fabriqué en France' }
+            if (!Array.isArray(specsList) || specsList.length === 0) {
+                specsList = [
+                    { label: 'Dimensions', value: product.dimensions || '65 x 60 x 85 cm' },
+                    { label: 'Poids', value: product.weight || '8.5 kg' },
+                    { label: 'Matériaux', value: product.material || 'Standard' }
                 ];
             }
-            renderDynamicSpecsUI(specsArray, prod.specs_columns || 1);
 
-            let vendorsArray = [];
-            if (prod.vendors) {
-                try {
-                    vendorsArray = typeof prod.vendors === 'string' ? JSON.parse(prod.vendors) : prod.vendors;
-                } catch(e) {}
-            }
-            if (!Array.isArray(vendorsArray) || vendorsArray.length === 0) {
-                if (prod.vendor_amazon) vendorsArray.push({ name: 'Amazon', price: prod.price || '', url: prod.vendor_amazon });
-                if (prod.vendor_wayfair) vendorsArray.push({ name: 'Wayfair', price: prod.price || '', url: prod.vendor_wayfair });
-                if (prod.vendor_ikea) vendorsArray.push({ name: 'IKEA', price: prod.price || '', url: prod.vendor_ikea });
-            }
-            renderVendorsModalUI(vendorsArray, prod.price);
+            const cols = product.specs_columns || 1;
+            const container = document.getElementById('dynamic-specs-container');
+            container.className = `grid grid-cols-${cols} gap-3 pt-1`;
+            
+            container.innerHTML = specsList.map(s => `
+                <div class="p-3 rounded-xl bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800">
+                    <span class="text-[10px] uppercase font-semibold text-slate-400 block">${s.label || 'Critère'}</span>
+                    <span class="text-xs font-medium text-slate-800 dark:text-slate-200 mt-0.5 block">${s.value || '-'}</span>
+                </div>
+            `).join('');
 
-            if (prod.model_url) {
-                load3DModel(prod.model_url);
+            // Rendu des vendeurs
+            let vendorsList = [];
+            if (product.vendors) {
+                vendorsList = typeof product.vendors === 'string' ? JSON.parse(product.vendors) : product.vendors;
+            }
+            if (!Array.isArray(vendorsList) || vendorsList.length === 0) {
+                vendorsList = [];
+                if (product.vendor_amazon) vendorsList.push({ name: 'Amazon', price: product.price || '', url: product.vendor_amazon });
+                if (product.vendor_wayfair) vendorsList.push({ name: 'Wayfair', price: product.price || '', url: product.vendor_wayfair });
+                if (product.vendor_ikea) vendorsList.push({ name: 'IKEA', price: product.price || '', url: product.vendor_ikea });
+            }
+
+            const vendorContainer = document.getElementById('modal-vendors-container');
+            vendorContainer.innerHTML = vendorsList.map(v => `
+                <a href="${v.url || '#'}" target="_blank" class="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-red-500/50 transition group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center text-xs group-hover:bg-red-500 group-hover:text-white transition">
+                            <i class="fa-solid fa-store"></i>
+                        </div>
+                        <div>
+                            <span class="font-medium text-slate-800 dark:text-white text-xs block">${v.name || 'Vendeur'}</span>
+                            <span class="text-[10px] text-slate-400">Offre partenaire</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold text-red-500">${v.price || product.price || ''}</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400 group-hover:text-red-500 transition"></i>
+                    </div>
+                </a>
+            `).join('');
+
+            // Chargement modèle 3D
+            if (product.model_url && product.model_url.startsWith('http')) {
+                load3DModel(product.model_url);
             } else {
                 loadDefault3DChair();
             }
         }
 
-        /* DRAWER & MODAL TOGGLES */
+        /* Drawer et Modal handlers */
         function toggleDrawer() {
             const drawer = document.getElementById('drawer-panel');
             const icon = document.getElementById('drawer-chevron-icon');
-            const isOpen = !drawer.classList.contains('translate-x-full');
-
-            if (isOpen) {
-                drawer.classList.add('translate-x-full');
-                icon.className = 'fa-solid fa-chevron-left text-sm';
-            } else {
+            if (drawer.classList.contains('translate-x-full')) {
                 drawer.classList.remove('translate-x-full');
-                icon.className = 'fa-solid fa-chevron-right text-sm';
+                icon.className = "fa-solid fa-chevron-right text-sm";
+            } else {
+                drawer.classList.add('translate-x-full');
+                icon.className = "fa-solid fa-chevron-left text-sm";
             }
         }
 
@@ -832,36 +751,21 @@
             card.classList.add('scale-95');
         }
 
-        function toggleTheme() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            showToast(`Mode ${isDark ? 'sombre' : 'clair'} activé`);
-        }
-
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        }
-
+        /* Initialisation */
         window.onload = function() {
-            initTheme();
             init3D();
             initSupabase();
             fetchProductData();
 
-            // Event Listeners
-            document.getElementById('btn-open-drawer')?.addEventListener('click', toggleDrawer);
-            document.getElementById('btn-open-desc-tab')?.addEventListener('click', toggleDrawer);
-            document.getElementById('btn-close-drawer')?.addEventListener('click', toggleDrawer);
-            document.getElementById('btn-availability')?.addEventListener('click', openAvailabilityModal);
-            document.getElementById('btn-close-modal')?.addEventListener('click', closeAvailabilityModal);
-            document.getElementById('btn-theme-toggle')?.addEventListener('click', toggleTheme);
-            document.getElementById('btn-replay-guide')?.addEventListener('click', startGuideAnimation);
+            document.getElementById('btn-open-drawer').addEventListener('click', toggleDrawer);
+            document.getElementById('btn-close-drawer').addEventListener('click', toggleDrawer);
+            document.getElementById('btn-open-desc-tab').addEventListener('click', toggleDrawer);
+            document.getElementById('btn-replay-guide').addEventListener('click', startGuideAnimation);
+
+            document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            });
         };
     </script>
 </body>
