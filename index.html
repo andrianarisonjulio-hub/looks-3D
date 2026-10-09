@@ -213,7 +213,7 @@
         </div>
     </main>
 
-    <!-- DRAWER SIDE PANEL (Fiche & Description) -->
+    <!-- DRAWER SIDE PANEL -->
     <aside id="drawer-panel" class="fixed top-0 right-0 bottom-0 w-80 sm:w-[420px] glass-ui z-40 drawer-transition transform translate-x-full shadow-2xl flex flex-col">
         
         <div class="p-6 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between pb-4 shrink-0">
@@ -227,7 +227,6 @@
 
         <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 text-xs">
             
-            <!-- Description "À propos" Section -->
             <div class="space-y-2">
                 <label id="label-about-title" class="font-normal uppercase tracking-wider text-slate-800 dark:text-slate-200 block text-[11px] flex items-center gap-1.5">
                     <i class="fa-solid fa-align-left text-red-500"></i> À propos du produit
@@ -237,26 +236,24 @@
                 </div>
             </div>
 
-            <!-- Technical Specifications Table (Dynamic Columns Layout) -->
             <div class="space-y-2">
                 <label id="label-specs-title" class="font-normal uppercase tracking-wider text-slate-800 dark:text-slate-200 block text-[11px] flex items-center gap-1.5">
                     <i class="fa-solid fa-list-check text-red-500"></i> Fiche Technique
                 </label>
                 
-                <!-- Dynamic Spec Container rendered by JavaScript -->
                 <div id="dynamic-specs-container">
                     <!-- Dynamic Grid or List Items -->
                 </div>
             </div>
 
-            <button onclick="document.getElementById('btn-availability').click()" class="w-full py-3.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-light text-xs uppercase tracking-wider shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 transition">
+            <button onclick="openAvailabilityModal()" class="w-full py-3.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-light text-xs uppercase tracking-wider shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 transition">
                 <i class="fa-solid fa-bag-shopping"></i>
                 <span>Acheter ce produit au meilleur prix</span>
             </button>
         </div>
     </aside>
 
-    <!-- Availability Modal with Dynamic Vendors -->
+    <!-- Availability Modal -->
     <div id="availability-modal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="glass-ui max-w-md w-full rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 transform scale-95 transition-transform duration-300" id="modal-card">
             
@@ -275,7 +272,6 @@
                     Acheter chez un vendeur partenaire
                 </span>
                 
-                <!-- Dynamic Vendors Container -->
                 <div id="modal-vendors-container" class="space-y-2.5 max-h-[320px] overflow-y-auto custom-scrollbar pr-1">
                     <!-- Dynamic Vendors rendered via JS -->
                 </div>
@@ -291,7 +287,6 @@
         let currentModel = null;
         let shadowPlane = null;
         let ambientLight, mainLight, fillLight, hemiLight;
-        let baseLightIntensities = { ambient: 1.2, main: 1.8, fill: 1.0, hemi: 0.8 };
         let initialCameraDistance = 9.486;
 
         let isGuideAnimating = false;
@@ -345,6 +340,74 @@
             }, 200);
         }
 
+        function init3D() {
+            const canvas = document.getElementById('webgl-canvas');
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.copy(defaultPos);
+
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.target.copy(defaultTarget);
+
+            controls.addEventListener('change', updateZoomBadge);
+
+            // Lighting
+            ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+            scene.add(ambientLight);
+
+            mainLight = new THREE.DirectionalLight(0xffffff, 1.8);
+            mainLight.position.set(5, 10, 7);
+            mainLight.castShadow = true;
+            mainLight.shadow.mapSize.width = 2048;
+            mainLight.shadow.mapSize.height = 2048;
+            scene.add(mainLight);
+
+            fillLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            fillLight.position.set(-5, 5, -5);
+            scene.add(fillLight);
+
+            hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
+            scene.add(hemiLight);
+
+            // Floor Shadow Plane
+            const planeGeo = new THREE.PlaneGeometry(20, 20);
+            const planeMat = new THREE.ShadowMaterial({ opacity: 0.15 });
+            shadowPlane = new THREE.Mesh(planeGeo, planeMat);
+            shadowPlane.rotation.x = -Math.PI / 2;
+            shadowPlane.receiveShadow = true;
+            scene.add(shadowPlane);
+
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        }
+
+        function animate(now = 0) {
+            requestAnimationFrame(animate);
+
+            if (isGuideAnimating) {
+                updateGuideAnimationStep(now);
+            } else {
+                controls.update();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
         function fitModelToStage(object) {
             const box = new THREE.Box3().setFromObject(object);
             const size = box.getSize(new THREE.Vector3());
@@ -363,13 +426,6 @@
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
-                    if (!child.material || child.material.isMeshBasicMaterial) {
-                        child.material = new THREE.MeshStandardMaterial({
-                            color: child.material ? child.material.color : 0xcccccc,
-                            roughness: 0.4,
-                            metalness: 0.2
-                        });
-                    }
                 }
             });
         }
@@ -398,6 +454,39 @@
             });
 
             return group;
+        }
+
+        function load3DModel(url) {
+            showLoading("Chargement du modèle 3D...");
+            
+            if (currentModel) scene.remove(currentModel);
+
+            const loader = new THREE.GLTFLoader();
+            loader.load(url, (gltf) => {
+                currentModel = gltf.scene;
+                fitModelToStage(currentModel);
+                scene.add(currentModel);
+                hideLoading();
+            }, (xhr) => {
+                if (xhr.lengthComputable) {
+                    const pct = Math.round((xhr.loaded / xhr.total) * 100);
+                    const bar = document.getElementById('loading-bar');
+                    if (bar) bar.style.width = pct + '%';
+                }
+            }, (error) => {
+                console.error("Erreur de chargement du modèle:", error);
+                hideLoading();
+                showToast("Fichier 3D non accessible, affichage du modèle par défaut.", true);
+                loadDefault3DChair();
+            });
+        }
+
+        function loadDefault3DChair() {
+            if (currentModel) scene.remove(currentModel);
+            currentModel = createChairModel();
+            fitModelToStage(currentModel);
+            scene.add(currentModel);
+            hideLoading();
         }
 
         function startGuideAnimation() {
@@ -498,7 +587,7 @@
                 try {
                     supabaseClient = window.supabase.createClient(url, key);
                 } catch (e) {
-                    console.error("Erreur d'initialisation Supabase:", e);
+                    console.error("Erreur Supabase:", e);
                 }
             }
         }
@@ -608,7 +697,6 @@
             }
         }
 
-        /* DYNAMIC VENDORS MODAL RENDERING */
         function getVendorIconInfo(name) {
             const lower = (name || '').toLowerCase();
             if (lower.includes('amazon')) return { icon: 'fa-brands fa-amazon', bg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400', tag: 'Europe & International' };
@@ -618,7 +706,6 @@
             if (lower.includes('cdiscount')) return { icon: 'fa-solid fa-tag', bg: 'bg-red-500/10 text-red-600 dark:text-red-400', tag: 'E-Commerce' };
             if (lower.includes('ebay')) return { icon: 'fa-brands fa-ebay', bg: 'bg-blue-600/10 text-blue-600 dark:text-blue-400', tag: 'Marketplace' };
             if (lower.includes('boulanger')) return { icon: 'fa-solid fa-plug', bg: 'bg-orange-500/10 text-orange-600 dark:text-orange-400', tag: 'Électroménager & Tech' };
-            if (lower.includes('maison')) return { icon: 'fa-solid fa-house', bg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', tag: 'Décoration & Mobilier' };
             return { icon: 'fa-solid fa-bag-shopping', bg: 'bg-red-500/10 text-red-600 dark:text-red-400', tag: 'Vendeur Partenaire' };
         }
 
@@ -666,29 +753,19 @@
             activeProduct = prod;
 
             document.getElementById('product-title').textContent = (prod.name || 'NOM DU PRODUIT').toUpperCase();
-            document.getElementById('product-subtitle').textContent = prod.subtitle || 'Collection Studio';
-            document.getElementById('modal-product-name').textContent = (prod.name || '').toUpperCase();
+            document.getElementById('product-subtitle').textContent = prod.subtitle || 'Collection Studio • Modèle 3D Haute Définition';
+            document.getElementById('modal-product-name').textContent = (prod.name || 'NOM DU PRODUIT').toUpperCase();
             document.getElementById('modal-product-price').textContent = prod.price || '299,00 €';
+
+            const aboutTitle = document.getElementById('label-about-title');
+            if (aboutTitle) aboutTitle.innerHTML = `<i class="fa-solid fa-align-left text-red-500"></i> ${prod.about_title || 'À propos du produit'}`;
             
-            // Custom Titles
-            const labelAbout = document.getElementById('label-about-title');
-            if (labelAbout) {
-                labelAbout.innerHTML = `<i class="fa-solid fa-align-left text-red-500"></i> ${prod.about_title || 'À propos du produit'}`;
-            }
-
-            const labelSpecs = document.getElementById('label-specs-title');
-            if (labelSpecs) {
-                labelSpecs.innerHTML = `<i class="fa-solid fa-list-check text-red-500"></i> ${prod.specs_title || 'Fiche Technique'}`;
-            }
-
-            // Description Body
             const descEl = document.getElementById('desc-full-text');
-            if (descEl) {
-                const descText = prod.description || 'Aucune description disponible.';
-                descEl.innerHTML = descText.split('\n').map(p => `<p>${p}</p>`).join('');
-            }
+            if (descEl) descEl.textContent = prod.description || "Conçue pour un confort optimal et une esthétique épurée, cette pièce allie l'ergonomie moderne à des matériaux haut de gamme.";
 
-            // Parse Specs Array
+            const specsTitle = document.getElementById('label-specs-title');
+            if (specsTitle) specsTitle.innerHTML = `<i class="fa-solid fa-list-check text-red-500"></i> ${prod.specs_title || 'Fiche Technique'}`;
+
             let specsArray = [];
             if (prod.tech_specs) {
                 try {
@@ -700,13 +777,12 @@
                     { label: 'Dimensions', value: prod.dimensions || '65 x 60 x 85 cm' },
                     { label: 'Poids Net', value: prod.weight || '8.5 kg' },
                     { label: 'Matériaux Principal', value: prod.material || 'Chêne massif & Aluminium' },
-                    { label: 'Garantie', value: prod.warranty || '2 ans constructeur' },
-                    { label: 'Origine', value: prod.origin || 'Fabriqué en France' }
+                    { label: 'Garantie', value: '2 ans constructeur' },
+                    { label: 'Origine', value: 'Fabriqué en France' }
                 ];
             }
             renderDynamicSpecsUI(specsArray, prod.specs_columns || 1);
 
-            // Parse Vendors Array
             let vendorsArray = [];
             if (prod.vendors) {
                 try {
@@ -714,210 +790,78 @@
                 } catch(e) {}
             }
             if (!Array.isArray(vendorsArray) || vendorsArray.length === 0) {
-                vendorsArray = [];
-                if (prod.vendor_amazon) vendorsArray.push({ name: 'Amazon', price: prod.price || '299,00 €', url: prod.vendor_amazon });
-                if (prod.vendor_wayfair) vendorsArray.push({ name: 'Wayfair', price: prod.price || '309,00 €', url: prod.vendor_wayfair });
-                if (prod.vendor_ikea) vendorsArray.push({ name: 'IKEA', price: prod.price || '289,00 €', url: prod.vendor_ikea });
+                if (prod.vendor_amazon) vendorsArray.push({ name: 'Amazon', price: prod.price || '', url: prod.vendor_amazon });
+                if (prod.vendor_wayfair) vendorsArray.push({ name: 'Wayfair', price: prod.price || '', url: prod.vendor_wayfair });
+                if (prod.vendor_ikea) vendorsArray.push({ name: 'IKEA', price: prod.price || '', url: prod.vendor_ikea });
             }
             renderVendorsModalUI(vendorsArray, prod.price);
 
             if (prod.model_url) {
-                load3DModelFromURL(prod.model_url);
+                load3DModel(prod.model_url);
             } else {
-                replaceCurrentModel(createChairModel(), "Modèle Standard");
+                loadDefault3DChair();
             }
         }
 
-        function load3DModelFromURL(url) {
-            showLoading("Chargement du fichier 3D...");
-            const loader = new THREE.GLTFLoader();
-            loader.load(
-                url,
-                (gltf) => {
-                    replaceCurrentModel(gltf.scene, activeProduct?.name || "Modèle 3D");
-                    hideLoading();
-                },
-                (xhr) => {
-                    if (xhr.lengthComputable) {
-                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
-                        const loadingBar = document.getElementById('loading-bar');
-                        if (loadingBar) loadingBar.style.width = percent + '%';
-                    }
-                },
-                (error) => {
-                    console.error("Erreur GLB:", error);
-                    showToast("Impossible de charger le modèle GLB. Modèle standard activé.", true);
-                    replaceCurrentModel(createChairModel(), "Erreur GLB");
-                    hideLoading();
-                }
-            );
-        }
-
-        function replaceCurrentModel(newObject, name) {
-            if (!scene) {
-                console.warn("Scene is not initialized yet.");
-                return;
-            }
-
-            if (currentModel) {
-                scene.remove(currentModel);
-                currentModel = null;
-            }
-
-            currentModel = newObject;
-            fitModelToStage(currentModel);
-            scene.add(currentModel);
-            hideLoading();
-        }
-
-        function initStudioScene() {
-            const canvas = document.getElementById('webgl-canvas');
-            if (!canvas) return;
-            
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xffffff);
-
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(5, 4, 7);
-
-            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, preserveDrawingBuffer: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2;
-
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.15;
-            controls.target.copy(defaultTarget);
-            
-            controls.minPolarAngle = 0.001;
-            controls.maxPolarAngle = Math.PI;
-
-            controls.minDistance = initialCameraDistance / 10.0; 
-            controls.maxDistance = initialCameraDistance * 3.0; 
-            
-            controls.screenSpacePanning = true; 
-            controls.panSpeed = 1.5;
-            
-            controls.addEventListener('change', updateZoomBadge);
-
-            const stopIntroOnInteraction = () => {
-                if (isGuideAnimating) stopGuideAnimation();
-            };
-            canvas.addEventListener('mousedown', stopIntroOnInteraction);
-            canvas.addEventListener('touchstart', stopIntroOnInteraction);
-            canvas.addEventListener('wheel', stopIntroOnInteraction);
-
-            ambientLight = new THREE.AmbientLight(0xffffff, baseLightIntensities.ambient * 1.8);
-            scene.add(ambientLight);
-
-            hemiLight = new THREE.HemisphereLight(0xffffff, 0xf0f0f5, baseLightIntensities.hemi * 1.8);
-            hemiLight.position.set(0, 20, 0);
-            scene.add(hemiLight);
-
-            mainLight = new THREE.DirectionalLight(0xffffff, baseLightIntensities.main * 1.8);
-            mainLight.position.set(8, 12, 8);
-            mainLight.castShadow = true;
-            mainLight.shadow.mapSize.width = 2048;
-            mainLight.shadow.mapSize.height = 2048;
-            mainLight.shadow.bias = -0.0001;
-            scene.add(mainLight);
-
-            fillLight = new THREE.DirectionalLight(0xffffff, baseLightIntensities.fill * 1.8);
-            fillLight.position.set(-8, 8, -6);
-            scene.add(fillLight);
-
-            const shadowGeo = new THREE.PlaneGeometry(30, 30);
-            const shadowMat = new THREE.ShadowMaterial({ opacity: 0.08 });
-            shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
-            shadowPlane.rotation.x = -Math.PI / 2;
-            shadowPlane.position.y = 0;
-            shadowPlane.receiveShadow = true;
-            scene.add(shadowPlane);
-
-            window.addEventListener('resize', onWindowResize);
-            updateZoomBadge();
-        }
-
-        function onWindowResize() {
-            if (!camera || !renderer) return;
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function setupEvents() {
+        /* DRAWER & MODAL TOGGLES */
+        function toggleDrawer() {
             const drawer = document.getElementById('drawer-panel');
-            const chevron = document.getElementById('drawer-chevron-icon');
+            const icon = document.getElementById('drawer-chevron-icon');
+            const isOpen = !drawer.classList.contains('translate-x-full');
 
-            const toggleDrawer = (open) => {
-                if (!drawer) return;
-                if (open) {
-                    drawer.classList.remove('translate-x-full');
-                    if (chevron) chevron.className = "fa-solid fa-chevron-right text-sm";
-                } else {
-                    drawer.classList.add('translate-x-full');
-                    if (chevron) chevron.className = "fa-solid fa-chevron-left text-sm";
-                }
-            };
-
-            document.getElementById('btn-open-drawer')?.addEventListener('click', () => {
-                const isOpen = !drawer.classList.contains('translate-x-full');
-                toggleDrawer(!isOpen);
-            });
-
-            document.getElementById('btn-open-desc-tab')?.addEventListener('click', () => toggleDrawer(true));
-            document.getElementById('btn-close-drawer')?.addEventListener('click', () => toggleDrawer(false));
-
-            document.getElementById('btn-theme-toggle')?.addEventListener('click', () => {
-                document.documentElement.classList.toggle('dark');
-                const isDark = document.documentElement.classList.contains('dark');
-                if (scene) scene.background = new THREE.Color(isDark ? 0x0f0f11 : 0xffffff);
-                showToast(isDark ? "Mode Sombre Activé" : "Mode Clair Activé");
-            });
-
-            document.getElementById('btn-replay-guide')?.addEventListener('click', startGuideAnimation);
-
-            // Modal Vendors
-            const modal = document.getElementById('availability-modal');
-            const modalBtn = document.getElementById('btn-availability');
-            const closeBtn = document.getElementById('btn-close-modal');
-            const modalCard = document.getElementById('modal-card');
-
-            modalBtn?.addEventListener('click', () => {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                modalCard.classList.remove('scale-95');
-            });
-
-            closeBtn?.addEventListener('click', () => {
-                modal.classList.add('opacity-0', 'pointer-events-none');
-                modalCard.classList.add('scale-95');
-            });
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (isGuideAnimating) {
-                updateGuideAnimationStep(performance.now());
-            } else if (controls) {
-                controls.update();
+            if (isOpen) {
+                drawer.classList.add('translate-x-full');
+                icon.className = 'fa-solid fa-chevron-left text-sm';
+            } else {
+                drawer.classList.remove('translate-x-full');
+                icon.className = 'fa-solid fa-chevron-right text-sm';
             }
-
-            if (renderer && scene && camera) renderer.render(scene, camera);
         }
 
-        window.onload = function () {
-            initStudioScene();
+        function openAvailabilityModal() {
+            const modal = document.getElementById('availability-modal');
+            const card = document.getElementById('modal-card');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-95');
+        }
+
+        function closeAvailabilityModal() {
+            const modal = document.getElementById('availability-modal');
+            const card = document.getElementById('modal-card');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            card.classList.add('scale-95');
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            showToast(`Mode ${isDark ? 'sombre' : 'clair'} activé`);
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        window.onload = function() {
+            initTheme();
+            init3D();
             initSupabase();
-            setupEvents();
             fetchProductData();
 
-            startGuideAnimation();
-            animate();
+            // Event Listeners
+            document.getElementById('btn-open-drawer')?.addEventListener('click', toggleDrawer);
+            document.getElementById('btn-open-desc-tab')?.addEventListener('click', toggleDrawer);
+            document.getElementById('btn-close-drawer')?.addEventListener('click', toggleDrawer);
+            document.getElementById('btn-availability')?.addEventListener('click', openAvailabilityModal);
+            document.getElementById('btn-close-modal')?.addEventListener('click', closeAvailabilityModal);
+            document.getElementById('btn-theme-toggle')?.addEventListener('click', toggleTheme);
+            document.getElementById('btn-replay-guide')?.addEventListener('click', startGuideAnimation);
         };
     </script>
 </body>
