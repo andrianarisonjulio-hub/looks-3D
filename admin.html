@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr" class="h-full">
+<html lang="fr" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOOKS - Administration & Gestion Catalogue 3D</title>
-    
+    <title>LOOKS - Panneau d'Administration</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -77,529 +76,637 @@
         }
     </style>
 </head>
+<body class="bg-slate-100 text-slate-800 dark:bg-[#0f0f11] dark:text-slate-100 min-h-screen flex flex-col antialiased selection:bg-red-500 selection:text-white relative">
 
-<body class="h-full flex flex-col antialiased relative selection:bg-red-500 selection:text-white overflow-hidden bg-slate-100 text-slate-800 dark:bg-[#0f0f11] dark:text-slate-100 transition-colors duration-300">
+<!-- LOGIN SCREEN OVERLAY -->
+<div id="auth-screen" class="absolute inset-0 z-50 bg-slate-100 dark:bg-[#0f0f11] flex items-center justify-center p-4 transition-colors duration-300">
+    
+    <button onclick="toggleTheme()" class="theme-toggle-btn absolute top-6 right-6 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-2 text-xs shadow-sm" title="Changer le mode d'affichage">
+        <i class="theme-toggle-icon fa-solid fa-moon text-indigo-600 dark:text-amber-400"></i>
+        <span class="theme-toggle-text font-medium hidden sm:inline">Mode Sombre</span>
+    </button>
 
-    <!-- LOGIN SCREEN OVERLAY -->
-    <div id="auth-screen" class="absolute inset-0 z-50 bg-slate-100 dark:bg-[#0f0f11] flex items-center justify-center p-4 transition-colors duration-300">
+    <div class="glass-ui max-w-sm w-full rounded-3xl p-8 shadow-2xl space-y-6 text-center">
         
-        <button onclick="toggleTheme()" class="theme-toggle-btn absolute top-6 right-6 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-2 text-xs shadow-sm" title="Changer le mode d'affichage">
-            <i class="theme-toggle-icon fa-solid fa-moon text-indigo-600 dark:text-amber-400"></i>
-            <span class="theme-toggle-text font-medium hidden sm:inline">Mode Sombre</span>
-        </button>
-
-        <div class="glass-ui max-w-sm w-full rounded-3xl p-8 shadow-2xl space-y-6 text-center">
-            
-            <div class="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center text-xl mx-auto shadow-lg">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            
-            <div class="space-y-1">
-                <h1 class="font-semibold text-slate-900 dark:text-white text-lg tracking-wide uppercase">LOOKS Admin</h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-light">Connexion sécurisée Supabase</p>
-            </div>
-
-            <!-- Formulaire de connexion Supabase -->
-            <form id="login-form" class="space-y-4 text-left text-xs">
-                <div>
-                    <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1 font-medium">URL Supabase</label>
-                    <input type="url" id="login-supabase-url" placeholder="https://xyz.supabase.co" required
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono text-xs transition-colors">
-                </div>
-                <div>
-                    <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1 font-medium">Clé API Anon (Public Key)</label>
-                    <input type="password" id="login-supabase-key" placeholder="eyJhbGciOiJIUzI1Ni..." required
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono text-xs transition-colors">
-                </div>
-                <div>
-                    <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1 font-medium">Email Administrateur</label>
-                    <input type="email" id="login-email" placeholder="admin@exemple.com" required
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 transition-colors">
-                </div>
-                <div>
-                    <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1 font-medium">Mot de passe</label>
-                    <input type="password" id="login-password" placeholder="••••••••" required
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 transition-colors">
-                </div>
-
-                <button type="submit" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium uppercase tracking-wider transition shadow-lg shadow-red-600/30">
-                    Se connecter à l'Admin
-                </button>
-            </form>
+        <div class="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center text-xl mx-auto shadow-lg">
+            <i class="fa-solid fa-shield-halved"></i>
         </div>
-    </div>
-
-    <!-- MAIN ADMIN DASHBOARD -->
-    <main id="admin-dashboard" class="flex-1 w-full h-full p-6 sm:p-10 overflow-y-auto custom-scrollbar hidden">
-        <div class="max-w-6xl mx-auto space-y-8">
-            
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
-                <div>
-                    <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-500 mb-1">
-                        <i class="fa-solid fa-shield-halved"></i> Dashboard Sécurisé
-                    </div>
-                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Gestionnaire de Produits, Vendeurs & Fiches 3D</h1>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pilotez votre catalogue, vos prix, vos vendeurs illimités, la disposition des colonnes et la fiche technique sur mesure.</p>
-                </div>
-                
-                <div class="flex items-center gap-2.5 flex-wrap">
-                    <button onclick="toggleTheme()" class="theme-toggle-btn px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-medium transition flex items-center gap-2 shadow-sm" title="Changer le mode d'affichage">
-                        <i class="theme-toggle-icon fa-solid fa-moon text-indigo-600 dark:text-amber-400"></i>
-                        <span class="theme-toggle-text hidden sm:inline">Mode Sombre</span>
-                    </button>
-
-                    <a id="link-client-preview" href="index.html" target="_blank" class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-medium tracking-wide transition flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-eye text-red-500"></i>
-                        <span>Ouvrir Visualiseur Client</span>
-                    </a>
-
-                    <button onclick="logoutAdmin()" class="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-red-500 text-slate-600 dark:text-slate-400 hover:text-red-500 text-xs font-medium transition flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        <span>Déconnexion</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- FORMULAIRE AJOUT / EDITION -->
-            <div class="glass-ui rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
-                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-                    <h2 id="form-title" class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                        <i class="fa-solid fa-plus text-red-500"></i> Ajouter un Nouveau Produit 3D
-                    </h2>
-                    <button id="btn-reset-form" type="button" class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-500 underline hidden">
-                        Annuler la modification
-                    </button>
-                </div>
-
-                <form id="product-form" class="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
-                    <input type="hidden" id="form-product-id">
-
-                    <!-- Basic Infos -->
-                    <div>
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Nom du Produit *</label>
-                        <input type="text" id="form-name" placeholder="ex: Chaise Ergonomique" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Code EAN (Code Barre)</label>
-                        <input type="text" id="form-ean" placeholder="ex: 370000000001" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
-                    </div>
-
-                    <div>
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Prix Vente Général (€) *</label>
-                        <input type="text" id="form-price" placeholder="ex: 299,00 €" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors" required>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">URL Modèle 3D (.glb) *</label>
-                        <input type="url" id="form-model-url" placeholder="https://pub-xxx.r2.dev/3d-models/chaise.glb" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono transition-colors" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Sous-titre / Collection</label>
-                        <input type="text" id="form-subtitle" placeholder="ex: Collection Studio 2026" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
-                    </div>
-
-                    <!-- Section Customization: "À propos" -->
-                    <div class="md:col-span-3 border-t border-slate-200 dark:border-slate-800/80 pt-4 mt-2">
-                        <div class="flex items-center gap-2 text-red-500 font-bold uppercase text-[11px] mb-3">
-                            <i class="fa-solid fa-align-left"></i> Personnalisation du bloc "À propos"
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Titre personnalisé du bloc</label>
-                                <input type="text" id="form-about-title" placeholder="À propos du produit" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Description complète "À propos"</label>
-                                <textarea id="form-description" rows="2" placeholder="Saisir la description complète du produit..." class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Section Customization: "Fiche Technique & Colonnes" -->
-                    <div class="md:col-span-3 border-t border-slate-200 dark:border-slate-800/80 pt-4 mt-2">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                            <div>
-                                <div class="flex items-center gap-2 text-red-500 font-bold uppercase text-[11px]">
-                                    <i class="fa-solid fa-list-check"></i> Personnalisation de la Fiche Technique
-                                </div>
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-light">Gérez dynamiquement le nombre de colonnes et les critères de votre fiche technique.</p>
-                            </div>
-
-                            <!-- Column Count Selector -->
-                            <div class="flex items-center gap-2 bg-slate-200/60 dark:bg-slate-900 p-1 rounded-xl border border-slate-300/60 dark:border-slate-800">
-                                <span class="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400 px-2">Disposition Colonnes:</span>
-                                <button type="button" onclick="setSpecsColumns(1)" id="btn-col-1" class="col-btn px-3 py-1 rounded-lg text-xs font-semibold transition bg-white dark:bg-slate-800 text-red-500 shadow-sm border border-slate-200 dark:border-slate-700">1 Col</button>
-                                <button type="button" onclick="setSpecsColumns(2)" id="btn-col-2" class="col-btn px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">2 Cols</button>
-                                <button type="button" onclick="setSpecsColumns(3)" id="btn-col-3" class="col-btn px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">3 Cols</button>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div>
-                                <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Titre du bloc Fiche Technique</label>
-                                <input type="text" id="form-specs-title" placeholder="Fiche Technique" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
-                            </div>
-                        </div>
-
-                        <!-- Dynamic Spec Rows Container -->
-                        <div class="space-y-3 bg-slate-100/50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 tracking-wider">Critères & Caractéristiques (Lignes personnalisées)</span>
-                                <button type="button" onclick="addSpecRow()" class="px-3 py-1.5 rounded-xl bg-red-600/10 hover:bg-red-600 text-red-600 hover:text-white border border-red-500/30 text-xs font-medium transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-plus text-[10px]"></i> Ajouter un critère
-                                </button>
-                            </div>
-
-                            <div id="specs-builder-container" class="space-y-2">
-                                <!-- Dynamic Rows rendered here via JS -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- GESTION DYNAMIQUE DES VENDEURS -->
-                    <div class="md:col-span-3 border-t border-slate-200 dark:border-slate-800/80 pt-4 mt-2">
-                        <div class="space-y-3 bg-slate-100/50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800">
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                <div>
-                                    <div class="flex items-center gap-2 text-red-500 font-bold uppercase text-[11px]">
-                                        <i class="fa-solid fa-cart-shopping"></i> Gestion Dynamique des Vendeurs & Liens
-                                    </div>
-                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-light">Ajoutez autant de vendeurs que vous souhaitez (Amazon, IKEA, Wayfair, Fnac, site web dédié, etc.).</p>
-                                </div>
-                                <button type="button" onclick="addVendorRow()" class="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-600/20 text-xs font-medium transition flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
-                                    <i class="fa-solid fa-plus text-[10px]"></i> Ajouter un vendeur
-                                </button>
-                            </div>
-
-                            <div id="vendors-builder-container" class="space-y-2 pt-1">
-                                <!-- Dynamic Vendor Rows rendered here via JS -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="md:col-span-3 flex justify-end pt-3">
-                        <button type="submit" class="px-8 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium uppercase tracking-wider transition shadow-lg shadow-red-600/30 flex items-center gap-2">
-                            <i class="fa-solid fa-floppy-disk"></i> Enregistrer le Produit dans Supabase
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- TABLEAU DE GESTION -->
-            <div class="glass-ui rounded-3xl p-6 sm:p-8 shadow-xl space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                        <i class="fa-solid fa-cubes text-red-500"></i> Catalogue Actuel dans Supabase
-                    </h3>
-                    <button id="btn-refresh-list" type="button" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 transition">
-                        <i class="fa-solid fa-rotate-right"></i> Actualiser
-                    </button>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="uppercase text-[10px] bg-slate-200/60 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-semibold">
-                            <tr>
-                                <th class="p-3.5 rounded-l-xl">Nom Produit</th>
-                                <th class="p-3.5">EAN</th>
-                                <th class="p-3.5">Prix</th>
-                                <th class="p-3.5">Fiche Tech</th>
-                                <th class="p-3.5">Vendeurs</th>
-                                <th class="p-3.5">Fichier 3D (.glb)</th>
-                                <th class="p-3.5 text-right rounded-r-xl">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-products-list" class="divide-y divide-slate-200 dark:divide-slate-800/80">
-                            <tr>
-                                <td colspan="7" class="p-6 text-center text-slate-500 dark:text-slate-400">Connexion à la base de données...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
+        
+        <div class="space-y-1">
+            <h1 class="font-semibold text-slate-900 dark:text-white text-lg tracking-wide uppercase">LOOKS Admin</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-light">Connexion sécurisée Supabase</p>
         </div>
-    </main>
 
-    <!-- CONFIRM DELETE MODAL -->
-    <div id="confirm-delete-modal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="glass-ui max-w-sm w-full rounded-3xl p-6 shadow-2xl space-y-4 text-center transform scale-95 transition-transform duration-300" id="delete-modal-card">
-            <div class="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center text-xl mx-auto shadow-md">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+        <!-- Formulaire de connexion Supabase -->
+        <form id="login-form" class="space-y-4 text-left text-xs">
+            <div>
+                <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1 font-medium">URL Supabase</label>
+                <input type="url" id="login-supabase-url" placeholder="https://xyz.supabase.co" required
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono text-xs transition-colors">
             </div>
             <div>
-                <h3 class="font-semibold text-slate-900 dark:text-white text-base">Supprimer ce produit ?</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Cette action est irréversible et retirera le modèle du catalogue Supabase.</p>
+                <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1 font-medium">Clé API Anon (Public Key)</label>
+                <input type="password" id="login-supabase-key" placeholder="eyJhbGciOiJIUzI1Ni..." required
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono text-xs transition-colors">
             </div>
-            <div class="flex items-center gap-3 pt-2">
-                <button type="button" onclick="closeDeleteModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition">
-                    Annuler
+            <div>
+                <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1 font-medium">Email Administrateur</label>
+                <input type="email" id="login-email" placeholder="admin@exemple.com" required
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 transition-colors">
+            </div>
+            <div>
+                <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1 font-medium">Mot de passe</label>
+                <input type="password" id="login-password" placeholder="••••••••" required
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 transition-colors">
+            </div>
+
+            <button type="submit" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium uppercase tracking-wider transition shadow-lg shadow-red-600/30">
+                Se connecter à l'Admin
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- MAIN ADMIN DASHBOARD -->
+<main id="admin-dashboard" class="flex-1 w-full h-full p-6 sm:p-10 overflow-y-auto custom-scrollbar hidden">
+    <div class="max-w-6xl mx-auto space-y-8">
+        
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+            <div>
+                <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-500 mb-1">
+                    <i class="fa-solid fa-shield-halved"></i> Dashboard Sécurisé
+                </div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Gestionnaire de Produits, Vendeurs & Fiches 3D</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pilotez votre catalogue, vos prix, vos vendeurs illimités, la disposition des colonnes et la fiche technique sur mesure.</p>
+            </div>
+            
+            <div class="flex items-center gap-2.5 flex-wrap">
+                <button onclick="openSqlModal()" class="px-3.5 py-2.5 rounded-xl bg-indigo-600/10 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-500/30 text-xs font-medium transition flex items-center gap-2 shadow-sm" title="Script SQL Supabase">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Configuration Supabase</span>
                 </button>
-                <button type="button" id="btn-confirm-delete" class="w-1/2 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-medium transition shadow-lg shadow-red-600/30">
-                    Confirmer
+
+                <button onclick="toggleTheme()" class="theme-toggle-btn px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-medium transition flex items-center gap-2 shadow-sm" title="Changer le mode d'affichage">
+                    <i class="theme-toggle-icon fa-solid fa-moon text-indigo-600 dark:text-amber-400"></i>
+                    <span class="theme-toggle-text hidden sm:inline">Mode Sombre</span>
+                </button>
+
+                <a id="link-client-preview" href="index.html" target="_blank" class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white text-xs font-medium tracking-wide transition flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-eye text-red-500"></i>
+                    <span>Ouvrir Visualiseur Client</span>
+                </a>
+
+                <button onclick="logoutAdmin()" class="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-red-500 text-slate-600 dark:text-slate-400 hover:text-red-500 text-xs font-medium transition flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Déconnexion</span>
                 </button>
             </div>
         </div>
+
+        <!-- FORMULAIRE AJOUT / EDITION -->
+        <div class="glass-ui rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                <h2 id="form-title" class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-plus text-red-500"></i> Ajouter un Nouveau Produit 3D
+                </h2>
+                <button id="btn-reset-form" type="button" class="text-xs text-slate-500 dark:text-slate-400 hover:text-red-500 underline hidden">
+                    Annuler la modification
+                </button>
+            </div>
+
+            <form id="product-form" class="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
+                <input type="hidden" id="form-product-id">
+
+                <!-- Basic Infos -->
+                <div>
+                    <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Nom du Produit *</label>
+                    <input type="text" id="form-name" placeholder="ex: Chaise Ergonomique" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors" required>
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Code EAN (Code Barre)</label>
+                    <input type="text" id="form-ean" placeholder="ex: 370000000001" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Prix Vente Général (€) *</label>
+                    <input type="text" id="form-price" placeholder="ex: 299,00 €" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors" required>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">URL Modèle 3D (.glb) *</label>
+                    <input type="url" id="form-model-url" placeholder="https://pub-xxx.r2.dev/3d-models/chaise.glb" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 font-mono transition-colors" required>
+                </div>
+
+                <div>
+                    <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Sous-titre / Collection</label>
+                    <input type="text" id="form-subtitle" placeholder="ex: Collection Studio 2026" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
+                </div>
+
+                <!-- Section Customization: "À propos" -->
+                <div class="md:col-span-3 border-t border-slate-200 dark:border-slate-800/80 pt-4 mt-2">
+                    <div class="flex items-center gap-2 text-red-500 font-bold uppercase text-[11px] mb-3">
+                        <i class="fa-solid fa-align-left"></i> Personnalisation du bloc "À propos"
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Titre personnalisé du bloc</label>
+                            <input type="text" id="form-about-title" placeholder="À propos du produit" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Description complète "À propos"</label>
+                            <textarea id="form-description" rows="2" placeholder="Saisir la description complète du produit..." class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Customization: "Fiche Technique & Colonnes" -->
+                <div class="md:col-span-3 border-t border-slate-200 dark:border-slate-800/80 pt-4 mt-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <div>
+                            <div class="flex items-center gap-2 text-red-500 font-bold uppercase text-[11px]">
+                                <i class="fa-solid fa-list-check"></i> Personnalisation de la Fiche Technique
+                            </div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-light">Gérez dynamiquement le nombre de colonnes et les critères de votre fiche technique.</p>
+                        </div>
+
+                        <!-- Column Count Selector -->
+                        <div class="flex items-center gap-2 bg-slate-200/60 dark:bg-slate-900 p-1 rounded-xl border border-slate-300/60 dark:border-slate-800">
+                            <span class="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400 px-2">Disposition Colonnes:</span>
+                            <button type="button" onclick="setSpecsColumns(1)" id="btn-col-1" class="col-btn px-3 py-1 rounded-lg text-xs font-semibold transition bg-white dark:bg-slate-800 text-red-500 shadow-sm border border-slate-200 dark:border-slate-700">1 Col</button>
+                            <button type="button" onclick="setSpecsColumns(2)" id="btn-col-2" class="col-btn px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">2 Cols</button>
+                            <button type="button" onclick="setSpecsColumns(3)" id="btn-col-3" class="col-btn px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">3 Cols</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-slate-600 dark:text-slate-400 uppercase text-[10px] mb-1.5 font-medium">Titre du bloc Fiche Technique</label>
+                            <input type="text" id="form-specs-title" placeholder="Fiche Technique" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-colors">
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Spec Rows Container -->
+                    <div class="space-y-3 bg-slate-100/50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 tracking-wider">Critères & Caractéristiques (Lignes personnalisées)</span>
+                            <button type="button" onclick="addSpecRow()" class="px-3 py-1.5 rounded-xl bg-red-600/10 hover:bg-red-600 text-red-600 hover:text-white border border-red-500/30 text-xs font-medium transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus text-[10px]"></i> Ajouter un critère
+                            </button>
+                        </div>
+
+                        <div id="specs-builder-container" class="space-y-2">
+                            <!-- Dynamic Rows rendered here via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GESTION DYNAMIQUE ET TOTALE DES VENDEURS ET PARTENAIRES -->
+                <div class="md:col-span-3 border-t border-slate-200 dark:border-slate-800/80 pt-4 mt-2">
+                    <div class="space-y-3 bg-slate-100/50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <div class="flex items-center gap-2 text-red-500 font-bold uppercase text-[11px]">
+                                    <i class="fa-solid fa-cart-shopping"></i> Gestion Dynamique des Vendeurs & Liens (Contrôle Total)
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-light">Ajoutez autant de vendeurs que vous souhaitez (Amazon, IKEA, Wayfair, Fnac, site web dédié, etc.).</p>
+                            </div>
+                            <button type="button" onclick="addVendorRow()" class="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-600/20 text-xs font-medium transition flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
+                                <i class="fa-solid fa-plus text-[10px]"></i> Ajouter un vendeur
+                            </button>
+                        </div>
+
+                        <div id="vendors-builder-container" class="space-y-2 pt-1">
+                            <!-- Dynamic Vendor Rows rendered here via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-3 flex justify-end pt-3">
+                    <button type="submit" class="px-8 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium uppercase tracking-wider transition shadow-lg shadow-red-600/30 flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Enregistrer le Produit dans Supabase
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- TABLEAU DE GESTION -->
+        <div class="glass-ui rounded-3xl p-6 sm:p-8 shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-cubes text-red-500"></i> Catalogue Actuel dans Supabase
+                </h3>
+                <button id="btn-refresh-list" type="button" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-rotate-right"></i> Actualiser
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="uppercase text-[10px] bg-slate-200/60 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-semibold">
+                        <tr>
+                            <th class="p-3.5 rounded-l-xl">Nom Produit</th>
+                            <th class="p-3.5">EAN</th>
+                            <th class="p-3.5">Prix</th>
+                            <th class="p-3.5">Fiche Tech</th>
+                            <th class="p-3.5">Vendeurs</th>
+                            <th class="p-3.5">Fichier 3D (.glb)</th>
+                            <th class="p-3.5 text-right rounded-r-xl">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-products-list" class="divide-y divide-slate-200 dark:divide-slate-800/80">
+                        <tr>
+                            <td colspan="7" class="p-6 text-center text-slate-500 dark:text-slate-400">Connexion à la base de données...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
+</main>
 
-    <!-- TOAST NOTIFICATIONS -->
-    <div id="toast-container" class="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+<!-- CONFIRM DELETE MODAL -->
+<div id="confirm-delete-modal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="glass-ui max-w-sm w-full rounded-3xl p-6 shadow-2xl space-y-4 text-center transform scale-95 transition-transform duration-300" id="delete-modal-card">
+        <div class="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center text-xl mx-auto shadow-md">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+            <h3 class="font-semibold text-slate-900 dark:text-white text-base">Supprimer ce produit ?</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Cette action est irréversible et retirera le modèle du catalogue Supabase.</p>
+        </div>
+        <div class="flex items-center gap-3 pt-2">
+            <button type="button" onclick="closeDeleteModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition">
+                Annuler
+            </button>
+            <button type="button" id="btn-confirm-delete" class="w-1/2 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-medium transition shadow-lg shadow-red-600/30">
+                Confirmer
+            </button>
+        </div>
+    </div>
+</div>
 
-    <script>
-        let supabaseClient = null;
-        let currentSelectedColumns = 1;
-        let activeDeleteId = null;
+<!-- SQL SETUP HELPER MODAL -->
+<div id="sql-modal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="glass-ui max-w-2xl w-full rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 transform scale-95 transition-transform duration-300" id="sql-modal-card">
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+            <div class="flex items-center gap-2 text-indigo-500 font-bold text-sm uppercase">
+                <i class="fa-solid fa-database"></i> Script SQL Supabase (Mise à jour Schema & Droits RLS)
+            </div>
+            <button type="button" onclick="closeSqlModal()" class="w-8 h-8 rounded-full bg-slate-200/80 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-red-500 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            Exécutez ce script dans votre tableau de bord Supabase (<strong class="text-slate-900 dark:text-white">SQL Editor > New Query > Run</strong>). Il ajoute la colonne <code class="font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-red-500">price</code> ainsi que les autres colonnes manquantes et force le rafraîchissement immédiat de l'API Supabase :
+        </p>
+        <pre id="sql-code-block" class="bg-slate-900 text-slate-200 p-4 rounded-2xl text-[11px] font-mono overflow-x-auto max-h-60 custom-scrollbar border border-slate-800 select-all"></pre>
+        <div class="flex justify-between items-center pt-2">
+            <span class="text-[10px] text-slate-400">Cliquez sur Copier puis collez dans Supabase > SQL Editor > Run</span>
+            <button type="button" onclick="copySqlCode()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition shadow-md flex items-center gap-2">
+                <i class="fa-solid fa-copy"></i> Copier le SQL
+            </button>
+        </div>
+    </div>
+</div>
 
-        const defaultSpecsPreset = [
-            { label: 'Dimensions', value: '65 x 60 x 85 cm' },
-            { label: 'Poids Net', value: '8.5 kg' },
-            { label: 'Matériaux Principal', value: 'Chêne massif & Aluminium' },
-            { label: 'Garantie', value: '2 ans constructeur' },
-            { label: 'Origine', value: 'Fabriqué en France' }
-        ];
+<!-- TOAST NOTIFICATIONS -->
+<div id="toast-container" class="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
-        const defaultVendorsPreset = [
-            { name: 'Amazon', price: '299,00 €', url: 'https://www.amazon.com' },
-            { name: 'Wayfair', price: '309,00 €', url: 'https://www.wayfair.com' },
-            { name: 'IKEA', price: '289,00 €', url: 'https://www.ikea.com' }
-        ];
+<script>
+    let supabaseClient = null;
+    let currentSelectedColumns = 1;
+    let activeDeleteId = null;
 
-        /* THÈME CLAIR / SOMBRE */
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const SQL_SCHEMA_SCRIPT = `-- 1. Création de la table si elle n'existe pas
+CREATE TABLE IF NOT EXISTS public.products (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    name TEXT,
+    ean TEXT,
+    price TEXT,
+    model_url TEXT,
+    subtitle TEXT,
+    about_title TEXT,
+    description TEXT,
+    specs_title TEXT,
+    specs_columns INT DEFAULT 1,
+    tech_specs JSONB,
+    vendors JSONB,
+    dimensions TEXT,
+    weight TEXT,
+    material TEXT,
+    vendor_amazon TEXT,
+    vendor_wayfair TEXT,
+    vendor_ikea TEXT
+);
+
+-- 2. Ajout sécurisé de TOUTES les colonnes si la table existait déjà
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS name TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS ean TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS price TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS model_url TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS subtitle TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS about_title TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS specs_title TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS specs_columns INT DEFAULT 1;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS tech_specs JSONB;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS vendors JSONB;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS dimensions TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS weight TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS material TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS vendor_amazon TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS vendor_wayfair TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS vendor_ikea TEXT;
+
+-- 3. Configuration des règles de sécurité (Row Level Security - RLS)
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow Public Read" ON public.products;
+DROP POLICY IF EXISTS "Allow Authenticated All" ON public.products;
+DROP POLICY IF EXISTS "Allow All Access" ON public.products;
+
+CREATE POLICY "Allow All Access" ON public.products
+FOR ALL
+TO public, anon, authenticated
+USING (true)
+WITH CHECK (true);
+
+-- 4. Notification pour forcer le rafraîchissement immédiat du cache de l'API Supabase
+NOTIFY pgrst, 'reload schema';`;
+
+    /* Presets par défaut */
+    const defaultSpecsPreset = [
+        { label: 'Dimensions', value: '65 x 60 x 85 cm' },
+        { label: 'Poids Net', value: '8.5 kg' },
+        { label: 'Matériaux Principal', value: 'Chêne massif & Aluminium' },
+        { label: 'Garantie', value: '2 ans constructeur' },
+        { label: 'Origine', value: 'Fabriqué en France' }
+    ];
+
+    const defaultVendorsPreset = [
+        { name: 'Amazon', price: '299,00 €', url: 'https://www.amazon.com' },
+        { name: 'Wayfair', price: '309,00 €', url: 'https://www.wayfair.com' },
+        { name: 'IKEA', price: '289,00 €', url: 'https://www.ikea.com' }
+    ];
+
+    /* THÈME CLAIR / SOMBRE */
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            document.documentElement.classList.add('dark');
+            updateThemeUI(true);
+        } else {
+            document.documentElement.classList.remove('dark');
+            updateThemeUI(false);
+        }
+    }
+
+    function toggleTheme() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        updateThemeUI(isDark);
+        showToast(`Mode ${isDark ? 'sombre' : 'clair'} activé`);
+    }
+
+    function updateThemeUI(isDark) {
+        const buttons = document.querySelectorAll('.theme-toggle-btn');
+        buttons.forEach(btn => {
+            const icon = btn.querySelector('.theme-toggle-icon');
+            const text = btn.querySelector('.theme-toggle-text');
             
-            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-                document.documentElement.classList.add('dark');
-                updateThemeUI(true);
+            if (icon) {
+                icon.className = isDark ? 'theme-toggle-icon fa-solid fa-sun text-amber-400' : 'theme-toggle-icon fa-solid fa-moon text-indigo-600';
+            }
+            if (text) {
+                text.textContent = isDark ? 'Mode Clair' : 'Mode Sombre';
+            }
+        });
+    }
+
+    /* TOAST NOTIFICATIONS */
+    function showToast(message, isError = false) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `px-4 py-3 rounded-xl max-w-md ${isError ? 'bg-red-950/95 text-red-200 border-red-700' : 'bg-white/95 dark:bg-slate-900/90 text-slate-800 dark:text-white border-slate-200 dark:border-slate-700/50'} text-xs font-medium shadow-2xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 flex items-start gap-2.5 border`;
+        toast.innerHTML = `<i class="fa-solid ${isError ? 'fa-circle-exclamation text-red-500 text-sm mt-0.5' : 'fa-circle-check text-emerald-500 text-sm mt-0.5'}"></i><div class="flex-1">${message}</div>`;
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+        setTimeout(() => {
+            toast.classList.add('translate-y-2', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, isError ? 8000 : 3000);
+    }
+
+    function setSpecsColumns(cols) {
+        currentSelectedColumns = parseInt(cols, 10) || 1;
+        
+        [1, 2, 3].forEach(c => {
+            const btn = document.getElementById(`btn-col-${c}`);
+            if (!btn) return;
+            if (c === currentSelectedColumns) {
+                btn.className = "col-btn px-3 py-1 rounded-lg text-xs font-semibold transition bg-white dark:bg-slate-800 text-red-500 shadow-sm border border-slate-200 dark:border-slate-700";
             } else {
-                document.documentElement.classList.remove('dark');
-                updateThemeUI(false);
+                btn.className = "col-btn px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
             }
-        }
+        });
+    }
 
-        function toggleTheme() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            updateThemeUI(isDark);
-            showToast(`Mode ${isDark ? 'sombre' : 'clair'} activé`);
-        }
+    /* SPECS BUILDER */
+    function renderSpecsBuilderRows(specsList) {
+        const container = document.getElementById('specs-builder-container');
+        if (!container) return;
 
-        function updateThemeUI(isDark) {
-            const buttons = document.querySelectorAll('.theme-toggle-btn');
-            buttons.forEach(btn => {
-                const icon = btn.querySelector('.theme-toggle-icon');
-                const text = btn.querySelector('.theme-toggle-text');
+        const list = (Array.isArray(specsList) && specsList.length > 0) ? specsList : defaultSpecsPreset;
+        
+        container.innerHTML = list.map((item, index) => `
+            <div class="spec-row flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition">
+                <span class="text-[10px] font-mono text-slate-400 w-5 text-center shrink-0">#${index + 1}</span>
+                <input type="text" class="spec-label w-1/3 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 font-medium" placeholder="Label ex: Dimensions" value="${item.label || ''}">
+                <input type="text" class="spec-value flex-1 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500" placeholder="Valeur ex: 65 x 60 x 85 cm" value="${item.value || ''}">
                 
-                if (icon) {
-                    icon.className = isDark ? 'theme-toggle-icon fa-solid fa-sun text-amber-400' : 'theme-toggle-icon fa-solid fa-moon text-indigo-600';
-                }
-                if (text) {
-                    text.textContent = isDark ? 'Mode Clair' : 'Mode Sombre';
-                }
-            });
-        }
-
-        /* TOAST NOTIFICATIONS */
-        function showToast(message, isError = false) {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-            const toast = document.createElement('div');
-            toast.className = `px-4 py-3 rounded-xl max-w-md ${isError ? 'bg-red-950/95 text-red-200 border-red-700' : 'bg-white/95 dark:bg-slate-900/90 text-slate-800 dark:text-white border-slate-200 dark:border-slate-700/50'} text-xs font-medium shadow-2xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 flex items-start gap-2.5 border`;
-            toast.innerHTML = `<i class="fa-solid ${isError ? 'fa-circle-exclamation text-red-500 text-sm mt-0.5' : 'fa-circle-check text-emerald-500 text-sm mt-0.5'}"></i><div class="flex-1">${message}</div>`;
-            container.appendChild(toast);
-
-            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
-            setTimeout(() => {
-                toast.classList.add('translate-y-2', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, isError ? 7000 : 3000);
-        }
-
-        function setSpecsColumns(cols) {
-            currentSelectedColumns = parseInt(cols, 10) || 1;
-            
-            [1, 2, 3].forEach(c => {
-                const btn = document.getElementById(`btn-col-${c}`);
-                if (!btn) return;
-                if (c === currentSelectedColumns) {
-                    btn.className = "col-btn px-3 py-1 rounded-lg text-xs font-semibold transition bg-white dark:bg-slate-800 text-red-500 shadow-sm border border-slate-200 dark:border-slate-700";
-                } else {
-                    btn.className = "col-btn px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
-                }
-            });
-        }
-
-        /* SPECS BUILDER */
-        function renderSpecsBuilderRows(specsList) {
-            const container = document.getElementById('specs-builder-container');
-            if (!container) return;
-
-            const list = (Array.isArray(specsList) && specsList.length > 0) ? specsList : defaultSpecsPreset;
-            
-            container.innerHTML = list.map((item, index) => `
-                <div class="spec-row flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition">
-                    <span class="text-[10px] font-mono text-slate-400 w-5 text-center shrink-0">#${index + 1}</span>
-                    <input type="text" class="spec-label w-1/3 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 font-medium" placeholder="Label ex: Dimensions" value="${item.label || ''}">
-                    <input type="text" class="spec-value flex-1 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500" placeholder="Valeur ex: 65 x 60 x 85 cm" value="${item.value || ''}">
-                    
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" onclick="moveSpecRow(${index}, -1)" title="Monter" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
-                            <i class="fa-solid fa-arrow-up"></i>
-                        </button>
-                        <button type="button" onclick="moveSpecRow(${index}, 1)" title="Descendre" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
-                            <i class="fa-solid fa-arrow-down"></i>
-                        </button>
-                        <button type="button" onclick="removeSpecRow(${index})" title="Supprimer" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-600 text-red-500 hover:text-white flex items-center justify-center text-xs transition">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" onclick="moveSpecRow(${index}, -1)" title="Monter" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                    <button type="button" onclick="moveSpecRow(${index}, 1)" title="Descendre" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </button>
+                    <button type="button" onclick="removeSpecRow(${index})" title="Supprimer" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-600 text-red-500 hover:text-white flex items-center justify-center text-xs transition">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
                 </div>
-            `).join('');
-        }
+            </div>
+        `).join('');
+    }
 
-        function getSpecsFromBuilder() {
-            const rows = document.querySelectorAll('.spec-row');
-            const result = [];
-            rows.forEach(r => {
-                const label = r.querySelector('.spec-label')?.value.trim();
-                const value = r.querySelector('.spec-value')?.value.trim();
-                if (label || value) {
-                    result.push({ label: label || 'Critère', value: value || '-' });
-                }
-            });
-            return result;
-        }
-
-        function addSpecRow() {
-            const current = getSpecsFromBuilder();
-            current.push({ label: '', value: '' });
-            renderSpecsBuilderRows(current);
-        }
-
-        function removeSpecRow(index) {
-            const current = getSpecsFromBuilder();
-            if (current.length <= 1) {
-                showToast("Au moins une caractéristique doit rester.", true);
-                return;
+    function getSpecsFromBuilder() {
+        const rows = document.querySelectorAll('.spec-row');
+        const result = [];
+        rows.forEach(r => {
+            const label = r.querySelector('.spec-label')?.value.trim();
+            const value = r.querySelector('.spec-value')?.value.trim();
+            if (label || value) {
+                result.push({ label: label || 'Critère', value: value || '-' });
             }
-            current.splice(index, 1);
-            renderSpecsBuilderRows(current);
+        });
+        return result;
+    }
+
+    function addSpecRow() {
+        const current = getSpecsFromBuilder();
+        current.push({ label: '', value: '' });
+        renderSpecsBuilderRows(current);
+    }
+
+    function removeSpecRow(index) {
+        const current = getSpecsFromBuilder();
+        if (current.length <= 1) {
+            showToast("Au moins une caractéristique doit rester.", true);
+            return;
         }
+        current.splice(index, 1);
+        renderSpecsBuilderRows(current);
+    }
 
-        function moveSpecRow(index, direction) {
-            const current = getSpecsFromBuilder();
-            const target = index + direction;
-            if (target < 0 || target >= current.length) return;
-            const temp = current[index];
-            current[index] = current[target];
-            current[target] = temp;
-            renderSpecsBuilderRows(current);
-        }
+    function moveSpecRow(index, direction) {
+        const current = getSpecsFromBuilder();
+        const target = index + direction;
+        if (target < 0 || target >= current.length) return;
+        const temp = current[index];
+        current[index] = current[target];
+        current[target] = temp;
+        renderSpecsBuilderRows(current);
+    }
 
-        /* VENDORS BUILDER */
-        function renderVendorsBuilderRows(vendorsList) {
-            const container = document.getElementById('vendors-builder-container');
-            if (!container) return;
+    /* VENDORS BUILDER */
+    function renderVendorsBuilderRows(vendorsList) {
+        const container = document.getElementById('vendors-builder-container');
+        if (!container) return;
 
-            const list = (Array.isArray(vendorsList) && vendorsList.length > 0) ? vendorsList : defaultVendorsPreset;
+        const list = (Array.isArray(vendorsList) && vendorsList.length > 0) ? vendorsList : defaultVendorsPreset;
 
-            container.innerHTML = list.map((item, index) => `
-                <div class="vendor-row flex flex-col md:flex-row items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition">
-                    <span class="text-[10px] font-mono text-slate-400 w-5 text-center shrink-0 hidden md:block">#${index + 1}</span>
-                    <div class="w-full md:w-1/4">
-                        <label class="block md:hidden text-[9px] uppercase text-slate-400 mb-0.5">Nom du Vendeur</label>
-                        <input type="text" class="vendor-name w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 font-medium" placeholder="ex: Amazon, Fnac..." value="${item.name || ''}">
-                    </div>
-                    <div class="w-full md:w-1/4">
-                        <label class="block md:hidden text-[9px] uppercase text-slate-400 mb-0.5">Prix Spécifique Vendeur</label>
-                        <input type="text" class="vendor-price w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500" placeholder="ex: 299,00 €" value="${item.price || ''}">
-                    </div>
-                    <div class="flex-1 w-full">
-                        <label class="block md:hidden text-[9px] uppercase text-slate-400 mb-0.5">Lien Web / Redirection</label>
-                        <input type="url" class="vendor-url w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 font-mono" placeholder="ex: https://www.amazon.com/dp/..." value="${item.url || ''}">
-                    </div>
-                    
-                    <div class="flex items-center gap-1 shrink-0 self-end md:self-center pt-1 md:pt-0">
-                        <button type="button" onclick="moveVendorRow(${index}, -1)" title="Monter" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
-                            <i class="fa-solid fa-arrow-up"></i>
-                        </button>
-                        <button type="button" onclick="moveVendorRow(${index}, 1)" title="Descendre" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
-                            <i class="fa-solid fa-arrow-down"></i>
-                        </button>
-                        <button type="button" onclick="removeVendorRow(${index})" title="Supprimer ce vendeur" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-600 text-red-500 hover:text-white flex items-center justify-center text-xs transition">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
+        container.innerHTML = list.map((item, index) => `
+            <div class="vendor-row flex flex-col md:flex-row items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition">
+                <span class="text-[10px] font-mono text-slate-400 w-5 text-center shrink-0 hidden md:block">#${index + 1}</span>
+                <div class="w-full md:w-1/4">
+                    <label class="block md:hidden text-[9px] uppercase text-slate-400 mb-0.5">Nom du Vendeur</label>
+                    <input type="text" class="vendor-name w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 font-medium" placeholder="ex: Amazon, Fnac..." value="${item.name || ''}">
                 </div>
-            `).join('');
-        }
+                <div class="w-full md:w-1/4">
+                    <label class="block md:hidden text-[9px] uppercase text-slate-400 mb-0.5">Prix Spécifique Vendeur</label>
+                    <input type="text" class="vendor-price w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500" placeholder="ex: 299,00 €" value="${item.price || ''}">
+                </div>
+                <div class="flex-1 w-full">
+                    <label class="block md:hidden text-[9px] uppercase text-slate-400 mb-0.5">Lien Web / Redirection</label>
+                    <input type="url" class="vendor-url w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white text-xs focus:outline-none focus:border-red-500 font-mono" placeholder="ex: https://www.amazon.com/dp/..." value="${item.url || ''}">
+                </div>
+                
+                <div class="flex items-center gap-1 shrink-0 self-end md:self-center pt-1 md:pt-0">
+                    <button type="button" onclick="moveVendorRow(${index}, -1)" title="Monter" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                    <button type="button" onclick="moveVendorRow(${index}, 1)" title="Descendre" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </button>
+                    <button type="button" onclick="removeVendorRow(${index})" title="Supprimer ce vendeur" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-600 text-red-500 hover:text-white flex items-center justify-center text-xs transition">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
 
-        function getVendorsFromBuilder() {
-            const rows = document.querySelectorAll('.vendor-row');
-            const result = [];
-            rows.forEach(r => {
-                const name = r.querySelector('.vendor-name')?.value.trim();
-                const price = r.querySelector('.vendor-price')?.value.trim();
-                const url = r.querySelector('.vendor-url')?.value.trim();
-                if (name || url || price) {
-                    result.push({
-                        name: name || 'Vendeur',
-                        price: price || '',
-                        url: url || '#'
-                    });
-                }
-            });
-            return result;
-        }
-
-        function addVendorRow() {
-            const current = getVendorsFromBuilder();
-            current.push({ name: '', price: '', url: '' });
-            renderVendorsBuilderRows(current);
-        }
-
-        function removeVendorRow(index) {
-            const current = getVendorsFromBuilder();
-            if (current.length <= 1) {
-                showToast("Au moins un vendeur doit être présent dans la liste.", true);
-                return;
+    function getVendorsFromBuilder() {
+        const rows = document.querySelectorAll('.vendor-row');
+        const result = [];
+        rows.forEach(r => {
+            const name = r.querySelector('.vendor-name')?.value.trim();
+            const price = r.querySelector('.vendor-price')?.value.trim();
+            const url = r.querySelector('.vendor-url')?.value.trim();
+            if (name || url || price) {
+                result.push({
+                    name: name || 'Vendeur',
+                    price: price || '',
+                    url: url || '#'
+                });
             }
-            current.splice(index, 1);
-            renderVendorsBuilderRows(current);
-        }
+        });
+        return result;
+    }
 
-        function moveVendorRow(index, direction) {
-            const current = getVendorsFromBuilder();
-            const target = index + direction;
-            if (target < 0 || target >= current.length) return;
-            const temp = current[index];
-            current[index] = current[target];
-            current[target] = temp;
-            renderVendorsBuilderRows(current);
-        }
+    function addVendorRow() {
+        const current = getVendorsFromBuilder();
+        current.push({ name: '', price: '', url: '' });
+        renderVendorsBuilderRows(current);
+    }
 
-        function initSupabaseFromStorage() {
-            const url = localStorage.getItem('supabaseUrl');
-            const key = localStorage.getItem('supabaseKey');
-            
-            if (url && key) {
-                document.getElementById('login-supabase-url').value = url;
-                document.getElementById('login-supabase-key').value = key;
-                try {
-                    supabaseClient = window.supabase.createClient(url, key);
-                } catch (e) {
-                    console.error(e);
-                }
+    function removeVendorRow(index) {
+        const current = getVendorsFromBuilder();
+        if (current.length <= 1) {
+            showToast("Au moins un vendeur doit être présent dans la liste.", true);
+            return;
+        }
+        current.splice(index, 1);
+        renderVendorsBuilderRows(current);
+    }
+
+    function moveVendorRow(index, direction) {
+        const current = getVendorsFromBuilder();
+        const target = index + direction;
+        if (target < 0 || target >= current.length) return;
+        const temp = current[index];
+        current[index] = current[target];
+        current[target] = temp;
+        renderVendorsBuilderRows(current);
+    }
+
+    function openSqlModal() {
+        const modal = document.getElementById('sql-modal');
+        const card = document.getElementById('sql-modal-card');
+        document.getElementById('sql-code-block').textContent = SQL_SCHEMA_SCRIPT;
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        card.classList.remove('scale-95');
+    }
+
+    function closeSqlModal() {
+        const modal = document.getElementById('sql-modal');
+        const card = document.getElementById('sql-modal-card');
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        card.classList.add('scale-95');
+    }
+
+    function copySqlCode() {
+        navigator.clipboard.writeText(SQL_SCHEMA_SCRIPT);
+        showToast("Script SQL copié dans le presse-papier !");
+    }
+
+    function initSupabaseFromStorage() {
+        const url = localStorage.getItem('supabaseUrl');
+        const key = localStorage.getItem('supabaseKey');
+        
+        if (url && key && window.supabase) {
+            document.getElementById('login-supabase-url').value = url;
+            document.getElementById('login-supabase-key').value = key;
+            try {
+                supabaseClient = window.supabase.createClient(url, key);
+            } catch (e) {
+                console.error(e);
             }
         }
+    }
 
-        async function checkAuthSession() {
-            if (!supabaseClient) return;
-            
+    async function checkAuthSession() {
+        if (!supabaseClient) return;
+        
+        try {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 document.getElementById('auth-screen').classList.add('hidden');
@@ -611,251 +718,275 @@
                 document.getElementById('admin-dashboard').classList.add('hidden');
                 document.getElementById('auth-screen').classList.remove('hidden');
             }
+        } catch (err) {
+            console.error("Erreur de session:", err);
         }
+    }
 
-        async function logoutAdmin() {
-            if (supabaseClient) {
-                await supabaseClient.auth.signOut();
-            }
-            document.getElementById('admin-dashboard').classList.add('hidden');
-            document.getElementById('auth-screen').classList.remove('hidden');
-            showToast("Déconnexion réussie");
+    async function logoutAdmin() {
+        if (supabaseClient) {
+            await supabaseClient.auth.signOut();
         }
+        document.getElementById('admin-dashboard').classList.add('hidden');
+        document.getElementById('auth-screen').classList.remove('hidden');
+        showToast("Déconnexion réussie");
+    }
 
-        async function loadAdminProducts() {
-            if (!supabaseClient) return;
-            const listEl = document.getElementById('admin-products-list');
-            listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500 dark:text-slate-400">Chargement des produits...</td></tr>`;
+    async function loadAdminProducts() {
+        if (!supabaseClient) return;
+        const listEl = document.getElementById('admin-products-list');
+        listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500 dark:text-slate-400">Chargement des produits...</td></tr>`;
 
-            try {
-                const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
-                if (error) throw error;
+        try {
+            const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
 
-                if (!data || data.length === 0) {
-                    listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500 dark:text-slate-400">Aucun produit dans Supabase pour le moment.</td></tr>`;
-                    return;
-                }
-
-                listEl.innerHTML = data.map(p => {
-                    let specsCount = 0;
-                    if (p.tech_specs) {
-                        try {
-                            const parsed = typeof p.tech_specs === 'string' ? JSON.parse(p.tech_specs) : p.tech_specs;
-                            if (Array.isArray(parsed)) specsCount = parsed.length;
-                        } catch(e) {}
-                    }
-
-                    let vendorsCount = 0;
-                    if (p.vendors) {
-                        try {
-                            const parsedV = typeof p.vendors === 'string' ? JSON.parse(p.vendors) : p.vendors;
-                            if (Array.isArray(parsedV)) vendorsCount = parsedV.length;
-                        } catch(e) {}
-                    }
-
-                    return `
-                    <tr class="hover:bg-slate-200/50 dark:hover:bg-slate-900/60 transition">
-                        <td class="p-3.5 font-medium text-slate-900 dark:text-white">${p.name}</td>
-                        <td class="p-3.5 font-mono text-slate-500 dark:text-slate-400 text-[11px]">${p.ean || '-'}</td>
-                        <td class="p-3.5 text-red-500 font-semibold">${p.price || '-'}</td>
-                        <td class="p-3.5">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-500 border border-red-500/30">
-                                ${p.specs_columns || 1} col. (${specsCount} crit.)
-                            </span>
-                        </td>
-                        <td class="p-3.5">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                                <i class="fa-solid fa-store mr-1"></i>${vendorsCount} vendeur(s)
-                            </span>
-                        </td>
-                        <td class="p-3.5 font-mono text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]" title="${p.model_url}">${p.model_url}</td>
-                        <td class="p-3.5 text-right space-x-2 shrink-0">
-                            <a href="index.html?id=${p.id}" target="_blank" title="Voir dans le visualiseur client" class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition">
-                                <i class="fa-solid fa-eye"></i>
-                            </a>
-                            <button onclick="editProduct('${p.id}')" title="Éditer" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button onclick="openDeleteModal('${p.id}')" title="Supprimer" class="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `}).join('');
-            } catch (err) {
-                console.error(err);
-                listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erreur lors du chargement : ${err.message || 'Vérifiez la table Supabase'}.</td></tr>`;
-            }
-        }
-
-        window.editProduct = async function(id) {
-            if (!supabaseClient) return;
-            const { data } = await supabaseClient.from('products').select('*').eq('id', id).single();
-            if (!data) return;
-
-            document.getElementById('form-product-id').value = data.id;
-            document.getElementById('form-name').value = data.name || '';
-            document.getElementById('form-ean').value = data.ean || '';
-            document.getElementById('form-price').value = data.price || '';
-            document.getElementById('form-model-url').value = data.model_url || '';
-            document.getElementById('form-subtitle').value = data.subtitle || '';
-            document.getElementById('form-about-title').value = data.about_title || '';
-            document.getElementById('form-description').value = data.description || '';
-            document.getElementById('form-specs-title').value = data.specs_title || '';
-
-            setSpecsColumns(data.specs_columns || 1);
-
-            let specsArray = [];
-            if (data.tech_specs) {
-                try {
-                    specsArray = typeof data.tech_specs === 'string' ? JSON.parse(data.tech_specs) : data.tech_specs;
-                } catch(e) {}
-            }
-            renderSpecsBuilderRows(specsArray);
-
-            let vendorsArray = [];
-            if (data.vendors) {
-                try {
-                    vendorsArray = typeof data.vendors === 'string' ? JSON.parse(data.vendors) : data.vendors;
-                } catch(e) {}
-            }
-            renderVendorsBuilderRows(vendorsArray);
-
-            document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-pen text-indigo-500"></i> Modifier le produit, vendeurs & fiche technique`;
-            document.getElementById('btn-reset-form').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        window.openDeleteModal = function(id) {
-            activeDeleteId = id;
-            const modal = document.getElementById('confirm-delete-modal');
-            const card = document.getElementById('delete-modal-card');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            card.classList.remove('scale-95');
-        };
-
-        window.closeDeleteModal = function() {
-            activeDeleteId = null;
-            const modal = document.getElementById('confirm-delete-modal');
-            const card = document.getElementById('delete-modal-card');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            card.classList.add('scale-95');
-        };
-
-        document.getElementById('btn-confirm-delete')?.addEventListener('click', async () => {
-            if (!activeDeleteId || !supabaseClient) return;
-
-            const id = activeDeleteId;
-            closeDeleteModal();
-
-            const { error } = await supabaseClient.from('products').delete().eq('id', id);
-            if (error) {
-                showToast("Erreur de suppression : " + error.message, true);
-            } else {
-                showToast("Produit supprimé du catalogue !");
-                loadAdminProducts();
-            }
-        });
-
-        function resetForm() {
-            document.getElementById('form-product-id').value = '';
-            document.getElementById('product-form').reset();
-            setSpecsColumns(1);
-            renderSpecsBuilderRows(defaultSpecsPreset);
-            renderVendorsBuilderRows(defaultVendorsPreset);
-            document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-plus text-red-500"></i> Ajouter un Nouveau Produit 3D`;
-            document.getElementById('btn-reset-form').classList.add('hidden');
-        }
-
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const url = document.getElementById('login-supabase-url').value.trim();
-            const key = document.getElementById('login-supabase-key').value.trim();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value.trim();
-
-            try {
-                localStorage.setItem('supabaseUrl', url);
-                localStorage.setItem('supabaseKey', key);
-                supabaseClient = window.supabase.createClient(url, key);
-
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) {
-                    showToast("Échec de connexion : " + error.message, true);
-                    return;
-                }
-
-                showToast("Connexion réussie !");
-                await checkAuthSession();
-            } catch (err) {
-                showToast("Erreur de connexion à l'API Supabase", true);
-            }
-        });
-
-        document.getElementById('product-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!supabaseClient) {
-                showToast("Session Supabase non initialisée. Veuillez vous reconnecter.", true);
+            if (!data || data.length === 0) {
+                listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500 dark:text-slate-400">Aucun produit dans Supabase pour le moment.</td></tr>`;
                 return;
             }
 
-            const productId = document.getElementById('form-product-id').value;
-            const techSpecsArray = getSpecsFromBuilder();
-            const vendorsArray = getVendorsFromBuilder();
+            listEl.innerHTML = data.map(p => {
+                let specsCount = 0;
+                if (p.tech_specs) {
+                    try {
+                        const parsed = typeof p.tech_specs === 'string' ? JSON.parse(p.tech_specs) : p.tech_specs;
+                        if (Array.isArray(parsed)) specsCount = parsed.length;
+                    } catch(e) {}
+                }
+                if (specsCount === 0 && (p.dimensions || p.material)) specsCount = 3;
 
-            const dimItem = techSpecsArray.find(s => s.label.toLowerCase().includes('dimen')) || techSpecsArray[0];
-            const weightItem = techSpecsArray.find(s => s.label.toLowerCase().includes('poids') || s.label.toLowerCase().includes('weight')) || techSpecsArray[1];
-            const matItem = techSpecsArray.find(s => s.label.toLowerCase().includes('matér') || s.label.toLowerCase().includes('mater')) || techSpecsArray[2];
+                let vendorsCount = 0;
+                if (p.vendors) {
+                    try {
+                        const parsedV = typeof p.vendors === 'string' ? JSON.parse(p.vendors) : p.vendors;
+                        if (Array.isArray(parsedV)) vendorsCount = parsedV.length;
+                    } catch(e) {}
+                }
+                if (vendorsCount === 0 && (p.vendor_amazon || p.vendor_wayfair || p.vendor_ikea)) vendorsCount = 3;
 
-            const payload = {
-                name: document.getElementById('form-name').value.trim(),
-                ean: document.getElementById('form-ean').value.trim() || null,
-                price: document.getElementById('form-price').value.trim(),
-                model_url: document.getElementById('form-model-url').value.trim(),
-                subtitle: document.getElementById('form-subtitle').value.trim() || 'Collection Studio • Modèle 3D Haute Définition',
-                about_title: document.getElementById('form-about-title').value.trim() || 'À propos du produit',
-                description: document.getElementById('form-description').value.trim() || null,
-                specs_title: document.getElementById('form-specs-title').value.trim() || 'Fiche Technique',
-                specs_columns: currentSelectedColumns,
-                tech_specs: techSpecsArray,
-                vendors: vendorsArray,
-                dimensions: dimItem ? dimItem.value : '65 x 60 x 85 cm',
-                weight: weightItem ? weightItem.value : '8.5 kg',
-                material: matItem ? matItem.value : 'Chêne massif & Aluminium',
-                vendor_amazon: vendorsArray.find(v => v.name.toLowerCase().includes('amazon'))?.url || vendorsArray[0]?.url || 'https://www.amazon.com',
-                vendor_wayfair: vendorsArray.find(v => v.name.toLowerCase().includes('wayfair'))?.url || vendorsArray[1]?.url || 'https://www.wayfair.com',
-                vendor_ikea: vendorsArray.find(v => v.name.toLowerCase().includes('ikea'))?.url || vendorsArray[2]?.url || 'https://www.ikea.com',
-            };
+                return `
+                <tr class="hover:bg-slate-200/50 dark:hover:bg-slate-900/60 transition">
+                    <td class="p-3.5 font-medium text-slate-900 dark:text-white">${p.name || 'Produit sans nom'}</td>
+                    <td class="p-3.5 font-mono text-slate-500 dark:text-slate-400 text-[11px]">${p.ean || '-'}</td>
+                    <td class="p-3.5 text-red-500 font-semibold">${p.price || '-'}</td>
+                    <td class="p-3.5">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-500 border border-red-500/30">
+                            ${p.specs_columns || 1} col. (${specsCount} crit.)
+                        </span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                            <i class="fa-solid fa-store mr-1"></i>${vendorsCount} vendeur(s)
+                        </span>
+                    </td>
+                    <td class="p-3.5 font-mono text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]" title="${p.model_url}">${p.model_url || '-'}</td>
+                    <td class="p-3.5 text-right space-x-2 shrink-0">
+                        <a href="index.html?id=${p.id}" target="_blank" title="Voir dans le visualiseur client" class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                        <button onclick="editProduct('${p.id}')" title="Éditer" class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="openDeleteModal('${p.id}')" title="Supprimer" class="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `}).join('');
+        } catch (err) {
+            console.error(err);
+            listEl.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erreur lors du chargement: ${err.message || 'Vérifiez Supabase'}.</td></tr>`;
+        }
+    }
 
-            let res;
-            if (productId) {
-                res = await supabaseClient.from('products').update(payload).eq('id', productId);
-            } else {
-                res = await supabaseClient.from('products').insert([payload]);
+    window.editProduct = async function(id) {
+        if (!supabaseClient) return;
+        const { data, error } = await supabaseClient.from('products').select('*').eq('id', id).single();
+        if (error || !data) return;
+
+        document.getElementById('form-product-id').value = data.id;
+        document.getElementById('form-name').value = data.name || '';
+        document.getElementById('form-ean').value = data.ean || '';
+        document.getElementById('form-price').value = data.price || '';
+        document.getElementById('form-model-url').value = data.model_url || '';
+        document.getElementById('form-subtitle').value = data.subtitle || '';
+        document.getElementById('form-about-title').value = data.about_title || '';
+        document.getElementById('form-description').value = data.description || '';
+        document.getElementById('form-specs-title').value = data.specs_title || '';
+
+        setSpecsColumns(data.specs_columns || 1);
+
+        let specsArray = [];
+        if (data.tech_specs) {
+            try {
+                specsArray = typeof data.tech_specs === 'string' ? JSON.parse(data.tech_specs) : data.tech_specs;
+            } catch(e) {}
+        }
+        if (!Array.isArray(specsArray) || specsArray.length === 0) {
+            specsArray = [
+                { label: 'Dimensions', value: data.dimensions || '65 x 60 x 85 cm' },
+                { label: 'Poids Net', value: data.weight || '8.5 kg' },
+                { label: 'Matériaux Principal', value: data.material || 'Chêne massif & Aluminium' },
+                { label: 'Garantie', value: '2 ans constructeur' },
+                { label: 'Origine', value: 'Fabriqué en France' }
+            ];
+        }
+        renderSpecsBuilderRows(specsArray);
+
+        let vendorsArray = [];
+        if (data.vendors) {
+            try {
+                vendorsArray = typeof data.vendors === 'string' ? JSON.parse(data.vendors) : data.vendors;
+            } catch(e) {}
+        }
+        if (!Array.isArray(vendorsArray) || vendorsArray.length === 0) {
+            vendorsArray = [];
+            if (data.vendor_amazon) vendorsArray.push({ name: 'Amazon', price: data.price || '', url: data.vendor_amazon });
+            if (data.vendor_wayfair) vendorsArray.push({ name: 'Wayfair', price: data.price || '', url: data.vendor_wayfair });
+            if (data.vendor_ikea) vendorsArray.push({ name: 'IKEA', price: data.price || '', url: data.vendor_ikea });
+            if (vendorsArray.length === 0) vendorsArray = defaultVendorsPreset;
+        }
+        renderVendorsBuilderRows(vendorsArray);
+
+        document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-pen text-indigo-500"></i> Modifier le produit, vendeurs & fiche technique`;
+        document.getElementById('btn-reset-form').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.openDeleteModal = function(id) {
+        activeDeleteId = id;
+        const modal = document.getElementById('confirm-delete-modal');
+        const card = document.getElementById('delete-modal-card');
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        card.classList.remove('scale-95');
+    };
+
+    window.closeDeleteModal = function() {
+        activeDeleteId = null;
+        const modal = document.getElementById('confirm-delete-modal');
+        const card = document.getElementById('delete-modal-card');
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        card.classList.add('scale-95');
+    };
+
+    document.getElementById('btn-confirm-delete')?.addEventListener('click', async () => {
+        if (!activeDeleteId || !supabaseClient) return;
+
+        const id = activeDeleteId;
+        closeDeleteModal();
+
+        const { error } = await supabaseClient.from('products').delete().eq('id', id);
+        if (error) {
+            showToast("Erreur de suppression: " + error.message, true);
+        } else {
+            showToast("Produit supprimé du catalogue !");
+            loadAdminProducts();
+        }
+    });
+
+    function resetForm() {
+        document.getElementById('form-product-id').value = '';
+        document.getElementById('product-form').reset();
+        setSpecsColumns(1);
+        renderSpecsBuilderRows(defaultSpecsPreset);
+        renderVendorsBuilderRows(defaultVendorsPreset);
+        document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-plus text-red-500"></i> Ajouter un Nouveau Produit 3D`;
+        document.getElementById('btn-reset-form').classList.add('hidden');
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const url = document.getElementById('login-supabase-url').value.trim();
+        const key = document.getElementById('login-supabase-key').value.trim();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+
+        try {
+            localStorage.setItem('supabaseUrl', url);
+            localStorage.setItem('supabaseKey', key);
+            supabaseClient = window.supabase.createClient(url, key);
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                showToast("Échec de connexion : " + error.message, true);
+                return;
             }
 
-            if (res.error) {
-                console.error("Erreur Supabase:", res.error);
-                showToast(`Erreur d'enregistrement : ${res.error.message} (Code : ${res.error.code || 'Inconnu'}). Suivez le guide de configuration Supabase ci-dessous.`, true);
-            } else {
-                showToast(productId ? "Produit mis à jour avec succès !" : "Nouveau produit ajouté au catalogue !");
-                resetForm();
-                loadAdminProducts();
-            }
-        });
-
-        document.getElementById('btn-reset-form').addEventListener('click', resetForm);
-        document.getElementById('btn-refresh-list').addEventListener('click', loadAdminProducts);
-
-        window.onload = async function() {
-            initTheme();
-            initSupabaseFromStorage();
+            showToast("Connexion réussie !");
             await checkAuthSession();
+        } catch (err) {
+            showToast("Erreur de connexion à l'API Supabase", true);
+        }
+    });
+
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!supabaseClient) {
+            showToast("Session Supabase non initialisée. Veuillez vous reconnecter.", true);
+            return;
+        }
+
+        const productId = document.getElementById('form-product-id').value;
+        const techSpecsArray = getSpecsFromBuilder();
+        const vendorsArray = getVendorsFromBuilder();
+
+        const dimItem = techSpecsArray.find(s => s.label.toLowerCase().includes('dimen')) || techSpecsArray[0];
+        const weightItem = techSpecsArray.find(s => s.label.toLowerCase().includes('poids') || s.label.toLowerCase().includes('weight')) || techSpecsArray[1];
+        const matItem = techSpecsArray.find(s => s.label.toLowerCase().includes('matér') || s.label.toLowerCase().includes('mater')) || techSpecsArray[2];
+
+        /* Construction de l'objet produit */
+        const payload = {
+            name: document.getElementById('form-name').value.trim(),
+            ean: document.getElementById('form-ean').value.trim() || null,
+            price: document.getElementById('form-price').value.trim(),
+            model_url: document.getElementById('form-model-url').value.trim(),
+            subtitle: document.getElementById('form-subtitle').value.trim() || 'Collection Studio • Modèle 3D Haute Définition',
+            about_title: document.getElementById('form-about-title').value.trim() || 'À propos du produit',
+            description: document.getElementById('form-description').value.trim() || null,
+            specs_title: document.getElementById('form-specs-title').value.trim() || 'Fiche Technique',
+            specs_columns: currentSelectedColumns,
+            tech_specs: techSpecsArray,
+            vendors: vendorsArray,
+            dimensions: dimItem ? dimItem.value : '65 x 60 x 85 cm',
+            weight: weightItem ? weightItem.value : '8.5 kg',
+            material: matItem ? matItem.value : 'Chêne massif & Aluminium',
+            vendor_amazon: vendorsArray.find(v => v.name.toLowerCase().includes('amazon'))?.url || vendorsArray[0]?.url || 'https://www.amazon.com',
+            vendor_wayfair: vendorsArray.find(v => v.name.toLowerCase().includes('wayfair'))?.url || vendorsArray[1]?.url || 'https://www.wayfair.com',
+            vendor_ikea: vendorsArray.find(v => v.name.toLowerCase().includes('ikea'))?.url || vendorsArray[2]?.url || 'https://www.ikea.com',
         };
-    </script>
+
+        let res;
+        if (productId) {
+            res = await supabaseClient.from('products').update(payload).eq('id', productId);
+        } else {
+            res = await supabaseClient.from('products').insert([payload]);
+        }
+
+        if (res.error) {
+            console.error("Erreur Supabase lors de l'insertion:", res.error);
+            openSqlModal();
+            showToast(`Erreur Supabase: ${res.error.message || res.error.details || 'Échec d\'enregistrement'}. Exécutez le script SQL mis à jour via la fenêtre qui s'est ouverte.`, true);
+        } else {
+            showToast(productId ? "Produit mis à jour avec succès !" : "Nouveau produit ajouté au catalogue !");
+            resetForm();
+            loadAdminProducts();
+        }
+    });
+
+    document.getElementById('btn-reset-form').addEventListener('click', resetForm);
+    document.getElementById('btn-refresh-list').addEventListener('click', loadAdminProducts);
+
+    window.onload = async function() {
+        initTheme();
+        initSupabaseFromStorage();
+        await checkAuthSession();
+    };
+</script>
+
 </body>
 </html>
