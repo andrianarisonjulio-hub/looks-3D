@@ -593,37 +593,36 @@
         }
 
         async function fetchProductData() {
-            const params = new URLSearchParams(window.location.search);
-            // Correction : on récupère 'id' ou 'model_id' envoyé par l'extension
-            const productId = params.get('id') || params.get('model_id');
-            const productEan = params.get('ean');
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('id') || params.get('model_id');
+    const productEan = params.get('ean');
 
-            if (!supabaseClient) {
-                loadDefaultFallbackProduct();
-                return;
-            }
+    // URL de votre nouveau Worker Cloudflare
+    const WORKER_URL = "https://looks-3d-api.andrianarisonjulio.workers.dev";
 
-            try {
-                let query = supabaseClient.from('products').select('*');
-                if (productId) {
-                    query = query.eq('id', productId);
-                } else if (productEan) {
-                    query = query.eq('ean', productEan);
-                } else {
-                    query = query.limit(1);
-                }
-
-                const { data, error } = await query;
-                if (error || !data || data.length === 0) {
-                    loadDefaultFallbackProduct();
-                } else {
-                    applyProductToUI(data[0]);
-                }
-            } catch (err) {
-                console.error(err);
-                loadDefaultFallbackProduct();
-            }
+    try {
+        let apiUrl = WORKER_URL;
+        if (productId) {
+            apiUrl += `?id=${encodeURIComponent(productId)}`;
+        } else if (productEan) {
+            apiUrl += `?ean=${encodeURIComponent(productEan)}`;
         }
+
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error("Erreur Worker API");
+
+        const data = await response.json();
+        
+        if (!data || data.length === 0) {
+            loadDefaultFallbackProduct();
+        } else {
+            applyProductToUI(data[0]);
+        }
+    } catch (err) {
+        console.error("Erreur lors de la récupération des données :", err);
+        loadDefaultFallbackProduct();
+    }
+}
 
         function loadDefaultFallbackProduct() {
             applyProductToUI({
