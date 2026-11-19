@@ -481,21 +481,13 @@
         }
 
         /* =========================================================
-           2. MOTEUR 3D FIDÈLE AUX COULEURS & NOIRS PROFONDS (PBR)
+           2. MOTEUR 3D AVEC LUMIÈRE ENVIRONNEMENTALE RENFORCÉE
            ========================================================= */
         let scene, camera, renderer, controls;
         let currentModel = null;
-        let hemiLight;
-        let rectKeyLight, rectKeyLightSecondary, camFillLight, camBottomLight;
+        let shadowPlane = null;
+        let shadowLight, hemiLight;
         let initialCameraDistance = 9.486;
-
-        // Intensités de base des lumières attachées à la caméra
-        const BASE_LIGHT_INTENSITIES = {
-            keyMain: 4.0,
-            keySec: 2.0,
-            fill: 2.0,
-            bottom: 1.7
-        };
 
         let isGuideAnimating = false;
         let guideStartTime = 0;
@@ -521,23 +513,12 @@
             }, 3000);
         }
 
-        function updateZoomAndLightIntensity() {
+        function updateZoomBadge() {
             if (!camera || !controls) return;
             const dist = camera.position.distanceTo(controls.target);
-            const zoomRatio = initialCameraDistance / Math.max(dist, 0.1);
-            const zoomPercent = Math.round(zoomRatio * 100);
+            const zoomPercent = Math.round((initialCameraDistance / Math.max(dist, 0.1)) * 100);
             const badge = document.getElementById('zoom-badge');
             if (badge) badge.textContent = zoomPercent + '%';
-
-            // Boost progressif au zoom pour révéler les détails sans saturer
-            const boostFactor = zoomRatio > 1 
-                ? Math.min(1 + (zoomRatio - 1) * 0.45, 2.5) 
-                : Math.max(0.85, 1 - (1 - zoomRatio) * 0.25);
-
-            if (rectKeyLight) rectKeyLight.intensity = BASE_LIGHT_INTENSITIES.keyMain * boostFactor;
-            if (rectKeyLightSecondary) rectKeyLightSecondary.intensity = BASE_LIGHT_INTENSITIES.keySec * boostFactor;
-            if (camFillLight) camFillLight.intensity = BASE_LIGHT_INTENSITIES.fill * boostFactor;
-            if (camBottomLight) camBottomLight.intensity = BASE_LIGHT_INTENSITIES.bottom * boostFactor;
         }
 
         function showLoading(text) {
@@ -575,13 +556,13 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.outputEncoding = THREE.sRGBEncoding;
-            // Reinhard2 / Linear calibré pour éviter que ACES ne délave les noirs en gris
-            renderer.toneMapping = THREE.ReinhardToneMapping;
-            renderer.toneMappingExposure = 1.25;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.12; // Légèrement rehaussé pour éclairer le modèle
             renderer.physicallyCorrectLights = true;
-            renderer.shadowMap.enabled = false;
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-            // Environnement HDRI Studio doux (évite le voile blanc sur les surfaces noires)
+            // Environnement HDRI Studio pour réflexions et éclairage ambiant global
             if (THREE.RoomEnvironment) {
                 const pmremGenerator = new THREE.PMREMGenerator(renderer);
                 pmremGenerator.compileEquirectangularShader();
@@ -599,38 +580,64 @@
             controls.maxPolarAngle = Math.PI;
             controls.minAzimuthAngle = -Infinity;
             controls.maxAzimuthAngle = Infinity;
-            controls.minDistance = 1.2;
+            controls.minDistance = 1.5;
             controls.maxDistance = 25;
             controls.target.copy(defaultTarget);
-            controls.addEventListener('change', updateZoomAndLightIntensity);
+            controls.addEventListener('change', updateZoomBadge);
 
-            // Lumière hémisphérique avec sol sombre (0x181a1f) pour préserver la profondeur des noirs
-            hemiLight = new THREE.HemisphereLight(0xffffff, 0x181a1f, 0.95);
+            // Lumière environnementale / hémisphérique renforcée (0.6 -> 1.15)
+            hemiLight = new THREE.HemisphereLight(0xffffff, 0x94a3b8, 1.15);
             scene.add(hemiLight);
 
             // =================================================================
-            // RIG LUMINEUX RATTACHÉ À LA CAMÉRA (Panneau Rectangulaire)
+            // RIG LUMINEUX RATTACHÉ À LA CAMÉRA (Panneau Rectangulaire x2)
             // =================================================================
             const cameraLightRig = new THREE.Group();
 
-            rectKeyLight = new THREE.DirectionalLight(0xfffdf8, BASE_LIGHT_INTENSITIES.keyMain);
+            const rectKeyLight = new THREE.DirectionalLight(0xfffdf8, 4.0);
             rectKeyLight.position.set(3.5, 4.5, 5);
             cameraLightRig.add(rectKeyLight);
 
-            rectKeyLightSecondary = new THREE.DirectionalLight(0xfff5ec, BASE_LIGHT_INTENSITIES.keySec);
+            const rectKeyLightSecondary = new THREE.DirectionalLight(0xfff5ec, 2.0);
             rectKeyLightSecondary.position.set(-2.0, 3.5, 4.5);
             cameraLightRig.add(rectKeyLightSecondary);
 
-            camFillLight = new THREE.DirectionalLight(0xeef2ff, BASE_LIGHT_INTENSITIES.fill);
+            const camFillLight = new THREE.DirectionalLight(0xeef2ff, 2.0);
             camFillLight.position.set(-4, 1, 3);
             cameraLightRig.add(camFillLight);
 
-            camBottomLight = new THREE.DirectionalLight(0xffffff, BASE_LIGHT_INTENSITIES.bottom);
+            const camBottomLight = new THREE.DirectionalLight(0xffffff, 1.7);
             camBottomLight.position.set(0, -3, 4);
             cameraLightRig.add(camBottomLight);
 
             camera.add(cameraLightRig);
             scene.add(camera);
+
+            // Lumière zénithale dédiée à l'ombre douce au sol
+            shadowLight = new THREE.DirectionalLight(0xffffff, 0.45);
+            shadowLight.position.set(2, 10, 3);
+            shadowLight.castShadow = true;
+            shadowLight.shadow.mapSize.width = 2048;
+            shadowLight.shadow.mapSize.height = 2048;
+            shadowLight.shadow.camera.near = 1;
+            shadowLight.shadow.camera.far = 25;
+            const d = 4.5;
+            shadowLight.shadow.camera.left = -d;
+            shadowLight.shadow.camera.right = d;
+            shadowLight.shadow.camera.top = d;
+            shadowLight.shadow.camera.bottom = -d;
+            shadowLight.shadow.bias = -0.0004;
+            shadowLight.shadow.normalBias = 0.02;
+            scene.add(shadowLight);
+
+            const planeGeo = new THREE.PlaneGeometry(20, 20);
+            const planeMat = new THREE.ShadowMaterial({ opacity: 0.22 });
+            planeMat.side = THREE.FrontSide;
+            shadowPlane = new THREE.Mesh(planeGeo, planeMat);
+            shadowPlane.rotation.x = -Math.PI / 2;
+            shadowPlane.position.y = -0.002;
+            shadowPlane.receiveShadow = true;
+            scene.add(shadowPlane);
 
             window.addEventListener('resize', onWindowResize);
             animate();
@@ -670,31 +677,15 @@
 
             object.traverse((child) => {
                 if (child.isMesh) {
-                    child.castShadow = false;
-                    child.receiveShadow = false;
+                    child.castShadow = true;
+                    child.receiveShadow = true;
                     if (child.material) {
                         const materials = Array.isArray(child.material) ? child.material : [child.material];
                         materials.forEach(mat => {
+                            // Réflexion de l'environnement augmentée (1.2 -> 1.7)
+                            mat.envMapIntensity = 1.7;
                             if (mat.map) mat.map.encoding = THREE.sRGBEncoding;
                             if (mat.emissiveMap) mat.emissiveMap.encoding = THREE.sRGBEncoding;
-
-                            // Détection des matériaux sombres (noir / anthracite) pour éviter qu'ils ne deviennent gris sous la lumière
-                            const c = mat.color;
-                            const luminance = c ? (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b) : 0.5;
-                            const isDarkMaterial = luminance < 0.15;
-
-                            if (isDarkMaterial) {
-                                // Réduit le voile spéculaire blanc sur les noirs tout en gardant le relief
-                                mat.envMapIntensity = 0.65;
-                                if ('reflectivity' in mat) mat.reflectivity = 0.25;
-                                if ('specularIntensity' in mat) mat.specularIntensity = 0.35;
-                                if (typeof mat.roughness === 'number' && (mat.metalness || 0) < 0.5) {
-                                    mat.roughness = Math.max(mat.roughness, 0.48);
-                                }
-                            } else {
-                                mat.envMapIntensity = 1.35;
-                            }
-
                             mat.needsUpdate = true;
                         });
                     }
@@ -712,9 +703,9 @@
                 clearcoatRoughness: 0.4
             });
             const matMetal = new THREE.MeshStandardMaterial({ 
-                color: 0x111215, 
-                roughness: 0.32, 
-                metalness: 0.85 
+                color: 0x1e2024, 
+                roughness: 0.22, 
+                metalness: 0.88 
             });
 
             const seatGeo = new THREE.BoxGeometry(1.6, 0.12, 1.6);
@@ -856,7 +847,7 @@
                 camera.lookAt(defaultTarget);
             }
 
-            updateZoomAndLightIntensity();
+            updateZoomBadge();
 
             if (progress >= 1.0) stopGuideAnimation();
         }
@@ -1053,7 +1044,7 @@
                 const isDark = document.documentElement.classList.toggle('dark');
                 localStorage.setItem('theme', isDark ? 'dark' : 'light');
                 if (renderer) {
-                    renderer.toneMappingExposure = isDark ? 1.32 : 1.25;
+                    renderer.toneMappingExposure = isDark ? 1.18 : 1.12;
                 }
             });
         };
