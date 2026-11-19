@@ -481,13 +481,21 @@
         }
 
         /* =========================================================
-           2. MOTEUR 3D AVEC LUMIÈRE ENVIRONNEMENTALE RENFORCÉE
+           2. MOTEUR 3D SANS OMBRE & ÉCLAIRAGE ADAPTATIF AU ZOOM
            ========================================================= */
         let scene, camera, renderer, controls;
         let currentModel = null;
-        let shadowPlane = null;
-        let shadowLight, hemiLight;
+        let hemiLight;
+        let rectKeyLight, rectKeyLightSecondary, camFillLight, camBottomLight;
         let initialCameraDistance = 9.486;
+
+        // Intensités de base des lumières attachées à la caméra
+        const BASE_LIGHT_INTENSITIES = {
+            keyMain: 4.0,
+            keySec: 2.0,
+            fill: 2.0,
+            bottom: 1.7
+        };
 
         let isGuideAnimating = false;
         let guideStartTime = 0;
@@ -513,12 +521,23 @@
             }, 3000);
         }
 
-        function updateZoomBadge() {
+        function updateZoomAndLightIntensity() {
             if (!camera || !controls) return;
             const dist = camera.position.distanceTo(controls.target);
-            const zoomPercent = Math.round((initialCameraDistance / Math.max(dist, 0.1)) * 100);
+            const zoomRatio = initialCameraDistance / Math.max(dist, 0.1);
+            const zoomPercent = Math.round(zoomRatio * 100);
             const badge = document.getElementById('zoom-badge');
             if (badge) badge.textContent = zoomPercent + '%';
+
+            // Plus on zoome (zoomRatio > 1), plus l'intensité de la lumière augmente pour révéler les détails
+            const boostFactor = zoomRatio > 1 
+                ? Math.min(1 + (zoomRatio - 1) * 0.45, 2.5) 
+                : Math.max(0.85, 1 - (1 - zoomRatio) * 0.25);
+
+            if (rectKeyLight) rectKeyLight.intensity = BASE_LIGHT_INTENSITIES.keyMain * boostFactor;
+            if (rectKeyLightSecondary) rectKeyLightSecondary.intensity = BASE_LIGHT_INTENSITIES.keySec * boostFactor;
+            if (camFillLight) camFillLight.intensity = BASE_LIGHT_INTENSITIES.fill * boostFactor;
+            if (camBottomLight) camBottomLight.intensity = BASE_LIGHT_INTENSITIES.bottom * boostFactor;
         }
 
         function showLoading(text) {
@@ -557,10 +576,9 @@
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.outputEncoding = THREE.sRGBEncoding;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.12; // Légèrement rehaussé pour éclairer le modèle
+            renderer.toneMappingExposure = 1.12;
             renderer.physicallyCorrectLights = true;
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.shadowMap.enabled = false; // Ombres désactivées
 
             // Environnement HDRI Studio pour réflexions et éclairage ambiant global
             if (THREE.RoomEnvironment) {
@@ -580,64 +598,38 @@
             controls.maxPolarAngle = Math.PI;
             controls.minAzimuthAngle = -Infinity;
             controls.maxAzimuthAngle = Infinity;
-            controls.minDistance = 1.5;
+            controls.minDistance = 1.2;
             controls.maxDistance = 25;
             controls.target.copy(defaultTarget);
-            controls.addEventListener('change', updateZoomBadge);
+            controls.addEventListener('change', updateZoomAndLightIntensity);
 
-            // Lumière environnementale / hémisphérique renforcée (0.6 -> 1.15)
+            // Lumière environnementale / hémisphérique renforcée
             hemiLight = new THREE.HemisphereLight(0xffffff, 0x94a3b8, 1.15);
             scene.add(hemiLight);
 
             // =================================================================
-            // RIG LUMINEUX RATTACHÉ À LA CAMÉRA (Panneau Rectangulaire x2)
+            // RIG LUMINEUX RATTACHÉ À LA CAMÉRA (Panneau Rectangulaire)
             // =================================================================
             const cameraLightRig = new THREE.Group();
 
-            const rectKeyLight = new THREE.DirectionalLight(0xfffdf8, 4.0);
+            rectKeyLight = new THREE.DirectionalLight(0xfffdf8, BASE_LIGHT_INTENSITIES.keyMain);
             rectKeyLight.position.set(3.5, 4.5, 5);
             cameraLightRig.add(rectKeyLight);
 
-            const rectKeyLightSecondary = new THREE.DirectionalLight(0xfff5ec, 2.0);
+            rectKeyLightSecondary = new THREE.DirectionalLight(0xfff5ec, BASE_LIGHT_INTENSITIES.keySec);
             rectKeyLightSecondary.position.set(-2.0, 3.5, 4.5);
             cameraLightRig.add(rectKeyLightSecondary);
 
-            const camFillLight = new THREE.DirectionalLight(0xeef2ff, 2.0);
+            camFillLight = new THREE.DirectionalLight(0xeef2ff, BASE_LIGHT_INTENSITIES.fill);
             camFillLight.position.set(-4, 1, 3);
             cameraLightRig.add(camFillLight);
 
-            const camBottomLight = new THREE.DirectionalLight(0xffffff, 1.7);
+            camBottomLight = new THREE.DirectionalLight(0xffffff, BASE_LIGHT_INTENSITIES.bottom);
             camBottomLight.position.set(0, -3, 4);
             cameraLightRig.add(camBottomLight);
 
             camera.add(cameraLightRig);
             scene.add(camera);
-
-            // Lumière zénithale dédiée à l'ombre douce au sol
-            shadowLight = new THREE.DirectionalLight(0xffffff, 0.45);
-            shadowLight.position.set(2, 10, 3);
-            shadowLight.castShadow = true;
-            shadowLight.shadow.mapSize.width = 2048;
-            shadowLight.shadow.mapSize.height = 2048;
-            shadowLight.shadow.camera.near = 1;
-            shadowLight.shadow.camera.far = 25;
-            const d = 4.5;
-            shadowLight.shadow.camera.left = -d;
-            shadowLight.shadow.camera.right = d;
-            shadowLight.shadow.camera.top = d;
-            shadowLight.shadow.camera.bottom = -d;
-            shadowLight.shadow.bias = -0.0004;
-            shadowLight.shadow.normalBias = 0.02;
-            scene.add(shadowLight);
-
-            const planeGeo = new THREE.PlaneGeometry(20, 20);
-            const planeMat = new THREE.ShadowMaterial({ opacity: 0.22 });
-            planeMat.side = THREE.FrontSide;
-            shadowPlane = new THREE.Mesh(planeGeo, planeMat);
-            shadowPlane.rotation.x = -Math.PI / 2;
-            shadowPlane.position.y = -0.002;
-            shadowPlane.receiveShadow = true;
-            scene.add(shadowPlane);
 
             window.addEventListener('resize', onWindowResize);
             animate();
@@ -677,12 +669,11 @@
 
             object.traverse((child) => {
                 if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
+                    child.castShadow = false;
+                    child.receiveShadow = false;
                     if (child.material) {
                         const materials = Array.isArray(child.material) ? child.material : [child.material];
                         materials.forEach(mat => {
-                            // Réflexion de l'environnement augmentée (1.2 -> 1.7)
                             mat.envMapIntensity = 1.7;
                             if (mat.map) mat.map.encoding = THREE.sRGBEncoding;
                             if (mat.emissiveMap) mat.emissiveMap.encoding = THREE.sRGBEncoding;
@@ -847,7 +838,7 @@
                 camera.lookAt(defaultTarget);
             }
 
-            updateZoomBadge();
+            updateZoomAndLightIntensity();
 
             if (progress >= 1.0) stopGuideAnimation();
         }
