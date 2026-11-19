@@ -510,12 +510,21 @@
         }
 
         /* =========================================================
-           2. MOTEUR 3D PHOTORÉALISTE & ÉCLAIRAGE STUDIO CAMÉRA
+           2. MOTEUR 3D PHOTORÉALISTE & ÉCLAIRAGE ADAPTATIF AU ZOOM
            ========================================================= */
         let scene, camera, renderer, controls;
         let currentModel = null;
-        let hemiLight;
+        let hemiLight, camKeyLight, camFillLight, camRimLight, camBottomLight;
         let initialCameraDistance = 9.486;
+
+        // Intensités de base de l'éclairage studio
+        const BASE_LIGHT_INTENSITIES = {
+            hemi: 0.75,
+            key: 2.2,
+            fill: 1.35,
+            rim: 1.15,
+            bottom: 1.1
+        };
 
         let isGuideAnimating = false;
         let guideStartTime = 0;
@@ -541,12 +550,34 @@
             }, 3000);
         }
 
+        /* Augmente progressivement l'intensité lumineuse lorsqu'on zoome sur les détails */
+        function updateDynamicZoomLighting(currentDist) {
+            if (!camKeyLight || !controls) return;
+
+            // 0 = distance normale (100%) ou plus loin ; 1 = zoom maximal (minDistance)
+            const zoomRange = Math.max(initialCameraDistance - controls.minDistance, 0.1);
+            const rawFactor = (initialCameraDistance - currentDist) / zoomRange;
+            const zoomT = THREE.MathUtils.clamp(rawFactor, 0, 1);
+
+            // Courbe douce (ease-out) pour un éclairage progressif des micro-détails (jusqu'à +75%)
+            const smoothZoom = 1 - Math.pow(1 - zoomT, 1.8);
+            const boost = 1 + smoothZoom * 0.75;
+
+            if (hemiLight) hemiLight.intensity = BASE_LIGHT_INTENSITIES.hemi * (1 + smoothZoom * 0.45);
+            if (camKeyLight) camKeyLight.intensity = BASE_LIGHT_INTENSITIES.key * boost;
+            if (camFillLight) camFillLight.intensity = BASE_LIGHT_INTENSITIES.fill * boost;
+            if (camRimLight) camRimLight.intensity = BASE_LIGHT_INTENSITIES.rim * (1 + smoothZoom * 0.5);
+            if (camBottomLight) camBottomLight.intensity = BASE_LIGHT_INTENSITIES.bottom * boost;
+        }
+
         function updateZoomBadge() {
             if (!camera || !controls) return;
             const dist = camera.position.distanceTo(controls.target);
             const zoomPercent = Math.round((initialCameraDistance / Math.max(dist, 0.1)) * 100);
             const badge = document.getElementById('zoom-badge');
             if (badge) badge.textContent = zoomPercent + '%';
+
+            updateDynamicZoomLighting(dist);
         }
 
         /* Zoom fluide via boutons + / - ou maintien enfoncé */
@@ -667,8 +698,8 @@
             controls.target.copy(defaultTarget);
             controls.addEventListener('change', updateZoomBadge);
 
-            // Lumière ambiante douce équilibrée (ciel & sol neutres)
-            hemiLight = new THREE.HemisphereLight(0xffffff, 0xdbeafe, 0.75);
+            // Lumière ambiante douce équilibrée
+            hemiLight = new THREE.HemisphereLight(0xffffff, 0xdbeafe, BASE_LIGHT_INTENSITIES.hemi);
             scene.add(hemiLight);
 
             // =================================================================
@@ -677,28 +708,29 @@
             const cameraLightRig = new THREE.Group();
 
             // 1. Key Light Frontale Haute (Éclaire directement et nettement la face observée)
-            const camKeyLight = new THREE.DirectionalLight(0xfffcf5, 2.2);
+            camKeyLight = new THREE.DirectionalLight(0xfffcf5, BASE_LIGHT_INTENSITIES.key);
             camKeyLight.position.set(2.5, 3.2, 6.0);
             cameraLightRig.add(camKeyLight);
 
             // 2. Fill Light Latérale Gauche (Élimine les zones sombres sur les flancs)
-            const camFillLight = new THREE.DirectionalLight(0xf1f5ff, 1.35);
+            camFillLight = new THREE.DirectionalLight(0xf1f5ff, BASE_LIGHT_INTENSITIES.fill);
             camFillLight.position.set(-4.5, 1.2, 4.5);
             cameraLightRig.add(camFillLight);
 
             // 3. Rim / Contour Light (Sculpte les arêtes et détache le produit du fond)
-            const camRimLight = new THREE.DirectionalLight(0xffffff, 1.15);
+            camRimLight = new THREE.DirectionalLight(0xffffff, BASE_LIGHT_INTENSITIES.rim);
             camRimLight.position.set(0, 4.5, -5.5);
             cameraLightRig.add(camRimLight);
 
             // 4. Under-Fill Light (Éclaire parfaitement le dessous du produit lors des rotations)
-            const camBottomLight = new THREE.DirectionalLight(0xf8fafc, 1.1);
+            camBottomLight = new THREE.DirectionalLight(0xf8fafc, BASE_LIGHT_INTENSITIES.bottom);
             camBottomLight.position.set(0, -4.0, 4.0);
             cameraLightRig.add(camBottomLight);
 
             camera.add(cameraLightRig);
             scene.add(camera);
 
+            updateZoomBadge();
             window.addEventListener('resize', onWindowResize);
             animate();
         }
