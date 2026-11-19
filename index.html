@@ -481,7 +481,7 @@
         }
 
         /* =========================================================
-           2. MOTEUR 3D SANS OMBRE & ÉCLAIRAGE ADAPTATIF AU ZOOM
+           2. MOTEUR 3D FIDÈLE AUX COULEURS & NOIRS PROFONDS (PBR)
            ========================================================= */
         let scene, camera, renderer, controls;
         let currentModel = null;
@@ -529,7 +529,7 @@
             const badge = document.getElementById('zoom-badge');
             if (badge) badge.textContent = zoomPercent + '%';
 
-            // Plus on zoome (zoomRatio > 1), plus l'intensité de la lumière augmente pour révéler les détails
+            // Boost progressif au zoom pour révéler les détails sans saturer
             const boostFactor = zoomRatio > 1 
                 ? Math.min(1 + (zoomRatio - 1) * 0.45, 2.5) 
                 : Math.max(0.85, 1 - (1 - zoomRatio) * 0.25);
@@ -575,12 +575,13 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.outputEncoding = THREE.sRGBEncoding;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.12;
+            // Reinhard2 / Linear calibré pour éviter que ACES ne délave les noirs en gris
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            renderer.toneMappingExposure = 1.25;
             renderer.physicallyCorrectLights = true;
-            renderer.shadowMap.enabled = false; // Ombres désactivées
+            renderer.shadowMap.enabled = false;
 
-            // Environnement HDRI Studio pour réflexions et éclairage ambiant global
+            // Environnement HDRI Studio doux (évite le voile blanc sur les surfaces noires)
             if (THREE.RoomEnvironment) {
                 const pmremGenerator = new THREE.PMREMGenerator(renderer);
                 pmremGenerator.compileEquirectangularShader();
@@ -603,8 +604,8 @@
             controls.target.copy(defaultTarget);
             controls.addEventListener('change', updateZoomAndLightIntensity);
 
-            // Lumière environnementale / hémisphérique renforcée
-            hemiLight = new THREE.HemisphereLight(0xffffff, 0x94a3b8, 1.15);
+            // Lumière hémisphérique avec sol sombre (0x181a1f) pour préserver la profondeur des noirs
+            hemiLight = new THREE.HemisphereLight(0xffffff, 0x181a1f, 0.95);
             scene.add(hemiLight);
 
             // =================================================================
@@ -674,9 +675,26 @@
                     if (child.material) {
                         const materials = Array.isArray(child.material) ? child.material : [child.material];
                         materials.forEach(mat => {
-                            mat.envMapIntensity = 1.7;
                             if (mat.map) mat.map.encoding = THREE.sRGBEncoding;
                             if (mat.emissiveMap) mat.emissiveMap.encoding = THREE.sRGBEncoding;
+
+                            // Détection des matériaux sombres (noir / anthracite) pour éviter qu'ils ne deviennent gris sous la lumière
+                            const c = mat.color;
+                            const luminance = c ? (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b) : 0.5;
+                            const isDarkMaterial = luminance < 0.15;
+
+                            if (isDarkMaterial) {
+                                // Réduit le voile spéculaire blanc sur les noirs tout en gardant le relief
+                                mat.envMapIntensity = 0.65;
+                                if ('reflectivity' in mat) mat.reflectivity = 0.25;
+                                if ('specularIntensity' in mat) mat.specularIntensity = 0.35;
+                                if (typeof mat.roughness === 'number' && (mat.metalness || 0) < 0.5) {
+                                    mat.roughness = Math.max(mat.roughness, 0.48);
+                                }
+                            } else {
+                                mat.envMapIntensity = 1.35;
+                            }
+
                             mat.needsUpdate = true;
                         });
                     }
@@ -694,9 +712,9 @@
                 clearcoatRoughness: 0.4
             });
             const matMetal = new THREE.MeshStandardMaterial({ 
-                color: 0x1e2024, 
-                roughness: 0.22, 
-                metalness: 0.88 
+                color: 0x111215, 
+                roughness: 0.32, 
+                metalness: 0.85 
             });
 
             const seatGeo = new THREE.BoxGeometry(1.6, 0.12, 1.6);
@@ -1035,7 +1053,7 @@
                 const isDark = document.documentElement.classList.toggle('dark');
                 localStorage.setItem('theme', isDark ? 'dark' : 'light');
                 if (renderer) {
-                    renderer.toneMappingExposure = isDark ? 1.18 : 1.12;
+                    renderer.toneMappingExposure = isDark ? 1.32 : 1.25;
                 }
             });
         };
